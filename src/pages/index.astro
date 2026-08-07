@@ -109,10 +109,14 @@ const categoriesPayload = JSON.stringify(categories).replace(/</g, "\\u003c");
               class="category-trigger"
               @click="filtersOpen = !filtersOpen; categoryOpen = false"
               :aria-expanded="filtersOpen.toString()"
-              data-active="true"
+              :data-active="$store.filters.hideRead.toString()"
             >
               Filters
-              <span class="category-count">1</span>
+              <span
+                class="category-count"
+                x-show="$store.filters.hideRead"
+                x-cloak
+              >1</span>
               <span class="category-caret" aria-hidden="true"></span>
             </button>
             <div
@@ -121,8 +125,12 @@ const categoriesPayload = JSON.stringify(categories).replace(/</g, "\\u003c");
               x-cloak
               @click.outside="filtersOpen = false"
             >
-              <label class="category-option category-option-locked">
-                <input type="checkbox" checked disabled />
+              <label class="category-option">
+                <input
+                  type="checkbox"
+                  x-model="$store.filters.hideRead"
+                  @change="$store.filters.persist(); resetPaging()"
+                />
                 <span>Hide read</span>
               </label>
             </div>
@@ -141,8 +149,29 @@ const categoriesPayload = JSON.stringify(categories).replace(/</g, "\\u003c");
           <template x-for="article in visible" :key="article.id">
             <li
               class="article-card"
-              :class="{ 'is-read': $store.reads.isRead(article.id) }"
+              :class="{
+                'is-read': $store.reads.isRead(article.id),
+                'is-saved': $store.saves.isSaved(article.id),
+              }"
             >
+              <button
+                type="button"
+                class="article-save-toggle"
+                title="Save for later"
+                aria-label="Save for later"
+                :aria-pressed="$store.saves.isSaved(article.id).toString()"
+                @click.stop="$store.saves.toggle(article.id)"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M6 3.75A1.75 1.75 0 0 1 7.75 2h8.5A1.75 1.75 0 0 1 18 3.75v16.09a.75.75 0 0 1-1.2.6L12 16.56l-4.8 3.88a.75.75 0 0 1-1.2-.6V3.75Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </button>
               <label
                 class="article-read-toggle"
                 title="Mark as read"
