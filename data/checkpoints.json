@@ -3,139 +3,140 @@
     "etag": "\"8c880-6584e513988f4\"",
     "lastModified": "Wed, 05 Aug 2026 15:20:53 GMT",
     "lastBuildDate": "2026-08-05T23:16:49.000Z",
-    "checkedAt": "2026-08-07T13:03:59.307Z"
+    "checkedAt": "2026-08-07T18:57:25.536Z"
   },
   "https://arrow.apache.org/feed.xml": {
     "etag": "\"26313-658538681a9cd\"",
     "lastModified": "Wed, 05 Aug 2026 21:33:42 GMT",
     "lastBuildDate": "2026-08-05T21:29:16.000Z",
-    "checkedAt": "2026-08-07T13:03:59.351Z"
+    "checkedAt": "2026-08-07T18:57:25.549Z"
   },
   "https://astro.build/rss.xml": {
     "etag": "W/\"91f1b5fad13b3e54f12c8531c4bbc098\"",
     "lastBuildDate": "2026-08-06T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:03:59.389Z"
+    "checkedAt": "2026-08-07T18:57:25.601Z"
   },
   "https://aws.amazon.com/blogs/big-data/feed/": {
-    "lastModified": "Fri, 07 Aug 2026 04:24:43 GMT",
-    "lastBuildDate": "2026-08-06T16:17:59.000Z",
-    "checkedAt": "2026-08-07T13:03:59.467Z"
+    "lastModified": "Fri, 07 Aug 2026 16:14:11 GMT",
+    "lastBuildDate": "2026-08-07T16:13:44.000Z",
+    "checkedAt": "2026-08-07T18:57:26.115Z"
   },
   "https://clickhouse.com/rss.xml": {
-    "lastBuildDate": "2026-08-07T06:34:24.000Z",
-    "checkedAt": "2026-08-07T13:03:59.656Z"
+    "etag": "W/\"5bae5f85a104ef4ae105a22e05c14a44\"",
+    "lastBuildDate": "2026-08-07T17:47:26.000Z",
+    "checkedAt": "2026-08-07T18:57:26.252Z"
   },
   "https://blog.cloudflare.com/rss": {
-    "lastModified": "Fri, 07 Aug 2026 13:01:51 GMT",
-    "lastBuildDate": "2026-08-07T13:02:42.000Z",
-    "checkedAt": "2026-08-07T13:04:01.257Z"
+    "lastModified": "Fri, 07 Aug 2026 17:24:14 GMT",
+    "lastBuildDate": "2026-08-07T18:25:10.000Z",
+    "checkedAt": "2026-08-07T18:57:26.324Z"
   },
   "https://www.cncf.io/blog/feed/": {
     "etag": "\"3495041ddb0df9e35829dbfef9b220e2\"",
     "lastModified": "Fri, 07 Aug 2026 11:30:00 GMT",
     "lastBuildDate": "2026-08-05T13:14:55.000Z",
-    "checkedAt": "2026-08-07T13:04:01.601Z"
+    "checkedAt": "2026-08-07T18:57:26.528Z"
   },
   "https://www.confluent.io/rss.xml": {
     "etag": "\"5d3c6ae8249e5ee0051828e2b3eba3e2-ssl-df\"",
     "lastBuildDate": "2026-08-07T09:02:49.000Z",
-    "checkedAt": "2026-08-07T13:04:01.714Z"
+    "checkedAt": "2026-08-07T18:57:26.561Z"
   },
   "https://dagster.io/blog/rss.xml": {
     "lastModified": "Thu, 06 Aug 2026 14:45:55 GMT",
     "lastBuildDate": "2026-08-06T13:27:33.000Z",
-    "checkedAt": "2026-08-07T13:04:01.829Z"
+    "checkedAt": "2026-08-07T18:57:26.624Z"
   },
   "https://www.databricks.com/feed": {
-    "etag": "W/\"fae014e0ed14492ba0e292cd520a6712\"",
-    "lastModified": "Fri, 07 Aug 2026 04:40:36 GMT",
-    "lastBuildDate": "2026-08-06T22:35:16.000Z",
-    "checkedAt": "2026-08-07T13:04:01.876Z"
+    "etag": "W/\"d98a1cdfd37fb5e7699477d2064e7ba7\"",
+    "lastModified": "Fri, 07 Aug 2026 18:25:51 GMT",
+    "lastBuildDate": "2026-08-07T18:22:15.000Z",
+    "checkedAt": "2026-08-07T18:57:27.045Z"
   },
   "https://blog.getdbt.com/rss/": {
-    "lastBuildDate": "2026-08-07T13:04:02.000Z",
-    "checkedAt": "2026-08-07T13:04:02.350Z"
+    "lastBuildDate": "2026-08-07T18:57:27.000Z",
+    "checkedAt": "2026-08-07T18:57:27.455Z"
   },
   "https://delta.io/rss.xml": {
     "etag": "\"3aa3355026ecd4baa92cdbc1d1413dd5-ssl-df\"",
     "lastBuildDate": "2026-07-03T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:02.425Z"
+    "checkedAt": "2026-08-07T18:57:27.792Z"
   },
   "https://duckdb.org/feed.xml": {
-    "etag": "W/\"5d176d6ffa89910c7b06f65d84ff9bab\"",
-    "lastBuildDate": "2026-08-07T09:38:55.000Z",
-    "checkedAt": "2026-08-07T13:04:02.496Z"
+    "etag": "W/\"1673698f032d90e02154dcc2107e5349\"",
+    "lastBuildDate": "2026-08-07T13:02:49.000Z",
+    "checkedAt": "2026-08-07T18:57:27.863Z"
   },
   "https://www.elastic.co/blog/feed": {
-    "lastBuildDate": "2026-08-07T13:01:19.000Z",
-    "checkedAt": "2026-08-07T13:04:02.619Z"
+    "lastBuildDate": "2026-08-07T18:53:38.000Z",
+    "checkedAt": "2026-08-07T18:57:27.910Z"
   },
   "https://fly.io/blog/feed.xml": {
-    "etag": "\"6a74f336-b57be\"",
-    "lastModified": "Thu, 06 Aug 2026 20:48:54 GMT",
+    "etag": "\"6a75fe24-b57d2\"",
+    "lastModified": "Fri, 07 Aug 2026 15:47:48 GMT",
     "lastBuildDate": "2026-07-24T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:02.681Z"
+    "checkedAt": "2026-08-07T18:57:28.054Z"
   },
   "https://github.blog/engineering.atom": {
-    "etag": "W/\"98a10981e8e4b3fcb3ff6be653bef9b8\"",
-    "lastModified": "Fri, 07 Aug 2026 02:01:24 GMT",
+    "etag": "W/\"0efb80ea844fce7b2a211e124b324b0d\"",
+    "lastModified": "Fri, 07 Aug 2026 18:25:16 GMT",
     "lastBuildDate": "2026-08-05T04:31:30.000Z",
-    "checkedAt": "2026-08-07T13:04:02.833Z"
+    "checkedAt": "2026-08-07T18:57:28.125Z"
   },
   "https://huggingface.co/blog/feed.xml": {
-    "etag": "W/\"3c029-pImopF480Hcoz+x2Y2kZbjWsDVI\"",
-    "lastBuildDate": "2026-08-06T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:02.914Z"
+    "etag": "W/\"3c015-7B6jBFJ32/6eH5bu4QjKg/jPAmQ\"",
+    "lastBuildDate": "2026-08-07T17:53:32.000Z",
+    "checkedAt": "2026-08-07T18:57:28.497Z"
   },
   "https://kubernetes.io/feed.xml": {
     "etag": "\"f67085ce28de4b068943263ed60e6a61-ssl-df\"",
     "lastBuildDate": "2026-08-03T16:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:02.941Z"
+    "checkedAt": "2026-08-07T18:57:28.601Z"
   },
   "https://engineering.fb.com/feed/": {
-    "etag": "W/\"8d5fb83a00c24a815f39cf0347a78a25\"",
-    "lastModified": "Wed, 05 Aug 2026 19:17:43 GMT",
-    "lastBuildDate": "2026-08-05T19:17:43.000Z",
-    "checkedAt": "2026-08-07T13:04:03.063Z"
+    "etag": "W/\"c724da5ac3edbc126c408f36ef360375\"",
+    "lastModified": "Fri, 07 Aug 2026 16:06:36 GMT",
+    "lastBuildDate": "2026-08-07T16:06:36.000Z",
+    "checkedAt": "2026-08-07T18:57:28.715Z"
   },
   "https://www.metabase.com/feed.xml": {
-    "etag": "W/\"fc6dfa1f67b5f2e09e78b95bbaccb6d3\"",
-    "lastModified": "Fri, 07 Aug 2026 11:50:49 GMT",
+    "etag": "W/\"634f969b255c7a3325fba93fa53ad8cc\"",
+    "lastModified": "Fri, 07 Aug 2026 18:30:57 GMT",
     "lastBuildDate": "2026-08-06T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:03.180Z"
+    "checkedAt": "2026-08-07T18:57:28.751Z"
   },
   "https://www.postgresql.org/news.rss": {
     "lastModified": "Fri, 07 Aug 2026 00:00:00 GMT",
     "lastBuildDate": "2026-08-07T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:04.426Z"
+    "checkedAt": "2026-08-07T18:57:28.948Z"
   },
   "https://redis.io/blog/feed/": {
-    "lastBuildDate": "2026-08-07T12:47:55.000Z",
-    "checkedAt": "2026-08-07T13:04:04.574Z"
+    "lastBuildDate": "2026-08-07T18:49:31.000Z",
+    "checkedAt": "2026-08-07T18:57:29.084Z"
   },
   "https://www.scylladb.com/feed/": {
     "etag": "W/\"52b7611375cd99e02d3fe1abad01fd8d\"",
     "lastModified": "Thu, 06 Aug 2026 17:52:50 GMT",
     "lastBuildDate": "2026-08-05T15:19:20.000Z",
-    "checkedAt": "2026-08-07T13:04:04.840Z"
+    "checkedAt": "2026-08-07T18:57:29.238Z"
   },
   "https://engineering.atspotify.com/feed": {
-    "lastBuildDate": "2026-08-07T07:36:06.000Z",
-    "checkedAt": "2026-08-07T13:04:05.059Z"
+    "lastBuildDate": "2026-08-07T17:28:21.000Z",
+    "checkedAt": "2026-08-07T18:57:29.473Z"
   },
   "https://stripe.com/blog/feed.rss": {
     "lastBuildDate": "2026-07-21T00:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:05.166Z"
+    "checkedAt": "2026-08-07T18:57:29.562Z"
   },
   "https://supabase.com/feed.xml": {
     "etag": "W/\"8f7517249461fa43c22cdd754489ea1a\"",
     "lastModified": "Fri, 07 Aug 2026 10:15:09 GMT",
     "lastBuildDate": "2026-08-07T07:00:00.000Z",
-    "checkedAt": "2026-08-07T13:04:05.354Z"
+    "checkedAt": "2026-08-07T18:57:29.605Z"
   },
   "https://trino.io/blog/feed.xml": {
     "etag": "\"f09b44a66050e9dbab6c3086c3876f1e-ssl-df\"",
     "lastBuildDate": "2026-07-23T02:17:49.000Z",
-    "checkedAt": "2026-08-07T13:04:05.405Z"
+    "checkedAt": "2026-08-07T18:57:29.659Z"
   }
 }
