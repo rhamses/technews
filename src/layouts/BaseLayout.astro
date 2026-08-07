@@ -1,0 +1,940 @@
+---
+import { SEO } from "astro-seo";
+import { Icon } from "astro-icon/components";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = "Technews",
+  description = "A minimalist RSS reader for technology headlines.",
+  canonical,
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title === "Technews" ? title : `${title} · Technews`;
+---
+
+<!doctype html>
+<html lang="en" data-theme="system" style="--content-scale: 1;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Technews" href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <SEO
+      title={pageTitle}
+      description={description}
+      canonical={canonical}
+      noindex={noindex}
+      openGraph={{
+        basic: {
+          title: pageTitle,
+          type: "website",
+          image: new URL("/og.svg", Astro.site).href,
+        },
+        optional: {
+          description,
+        },
+      }}
+    />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const storedTheme = localStorage.getItem("technews-theme");
+        const theme =
+          storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
+            ? storedTheme
+            : "system";
+        root.setAttribute("data-theme", theme);
+
+        const rawScale = Number(
+          localStorage.getItem("technews-content-scale") ??
+            localStorage.getItem("technews-font-scale"),
+        );
+        const scale = Number.isFinite(rawScale) && rawScale > 0 ? rawScale : 1;
+        root.style.setProperty("--content-scale", String(scale));
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Technews</a>
+
+      <div class="site-search" data-site-search>
+        <label class="site-search-field">
+          <Icon name="lucide:search" />
+          <span class="visually-hidden">Search articles</span>
+          <input
+            type="search"
+            placeholder="Search articles…"
+            autocomplete="off"
+            spellcheck="false"
+            data-search-input
+            aria-controls="site-search-results"
+            aria-expanded="false"
+            aria-autocomplete="list"
+          />
+        </label>
+        <ul
+          id="site-search-results"
+          class="site-search-results"
+          role="listbox"
+          data-search-results
+          hidden
+        ></ul>
+      </div>
+
+      <div class="header-actions">
+        <div class="user-menu" data-user-menu x-data>
+          <button
+            type="button"
+            class="icon-btn"
+            :data-active="Boolean($store.auth.userId)"
+            :aria-expanded="$store.auth.open.toString()"
+            aria-controls="user-menu-panel"
+            aria-label="Account"
+            title="Account"
+            @click="$store.auth.open = !$store.auth.open"
+          >
+            <Icon name="lucide:user" />
+          </button>
+          <div
+            id="user-menu-panel"
+            class="user-menu-panel"
+            x-show="$store.auth.open"
+            x-cloak
+            @click.outside="$store.auth.open = false"
+          >
+            <template x-if="!$store.auth.userId">
+              <div class="user-menu-section">
+                <p class="user-menu-copy">Save reading history with a passkey.</p>
+                <button type="button" class="user-menu-action" @click="$store.auth.login()">
+                  Sign in with passkey
+                </button>
+                <button type="button" class="user-menu-action" @click="$store.auth.register()">
+                  Create passkey
+                </button>
+              </div>
+            </template>
+            <template x-if="$store.auth.userId">
+              <div class="user-menu-section">
+                <p class="user-menu-copy">Signed in · history synced</p>
+                <button type="button" class="user-menu-action" @click="$store.auth.logout()">
+                  Sign out
+                </button>
+              </div>
+            </template>
+            <p class="user-menu-status" x-text="$store.auth.status" x-show="$store.auth.status"></p>
+          </div>
+        </div>
+        <a class="icon-btn" href="/rss.xml" aria-label="RSS feed" title="RSS feed">
+          <Icon name="lucide:rss" />
+        </a>
+        <div class="control-group" role="group" aria-label="Reading scale">
+          <button
+            type="button"
+            class="icon-btn"
+            data-scale-step="-1"
+            aria-label="Decrease reading scale"
+            title="Smaller text and images"
+          >
+            <Icon name="lucide:a-arrow-down" />
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            data-scale-step="1"
+            aria-label="Increase reading scale"
+            title="Larger text and images"
+          >
+            <Icon name="lucide:a-arrow-up" />
+          </button>
+        </div>
+        <div class="control-group" role="group" aria-label="Color theme">
+          <button
+            type="button"
+            class="icon-btn"
+            data-theme-set="light"
+            aria-label="Light theme"
+            title="Light"
+          >
+            <Icon name="lucide:sun" />
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            data-theme-set="dark"
+            aria-label="Dark theme"
+            title="Dark"
+          >
+            <Icon name="lucide:moon" />
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            data-theme-set="system"
+            aria-label="System theme"
+            title="System"
+          >
+            <Icon name="lucide:monitor" />
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="site-shell">
+      <main class="site-main">
+        <slot />
+      </main>
+
+      <footer class="site-footer">
+        <span>Updated on each build from curated feeds.</span>
+        <a href="/rss.xml"><Icon name="lucide:rss" /> Subscribe</a>
+      </footer>
+    </div>
+
+    <div
+      class="article-lightbox"
+      x-data
+      x-show="$store.lightbox.src"
+      x-cloak
+      x-transition.opacity.duration.150ms
+      @click="$store.lightbox.close()"
+      @keydown.escape.window="$store.lightbox.close()"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image preview"
+    >
+      <button
+        type="button"
+        class="article-lightbox-close"
+        aria-label="Close image"
+        @click.stop="$store.lightbox.close()"
+      >
+        ×
+      </button>
+      <img
+        class="article-lightbox-image"
+        :src="$store.lightbox.src"
+        alt=""
+        @click.stop
+      />
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const themeButtons = document.querySelectorAll<HTMLButtonElement>("[data-theme-set]");
+      const scaleButtons = document.querySelectorAll<HTMLButtonElement>("[data-scale-step]");
+
+      const SCALE_STEP = 0.05;
+
+      function currentScale() {
+        const value = Number.parseFloat(
+          getComputedStyle(root).getPropertyValue("--content-scale").trim(),
+        );
+        return Number.isFinite(value) && value > 0 ? value : 1;
+      }
+
+      function setScale(next: number) {
+        const value = Number(next.toFixed(2));
+        if (!Number.isFinite(value) || value <= 0) return;
+        root.style.setProperty("--content-scale", String(value));
+        localStorage.setItem("technews-content-scale", String(value));
+      }
+
+      function syncThemePressed() {
+        const current = root.getAttribute("data-theme") || "system";
+        themeButtons.forEach((button) => {
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.themeSet === current),
+          );
+        });
+      }
+
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const next = button.dataset.themeSet || "system";
+          root.setAttribute("data-theme", next);
+          localStorage.setItem("technews-theme", next);
+          syncThemePressed();
+        });
+      });
+
+      scaleButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const step = Number(button.dataset.scaleStep || 0);
+          setScale(currentScale() + step * SCALE_STEP);
+        });
+      });
+
+      syncThemePressed();
+
+      type SearchItem = {
+        id: string;
+        title: string;
+        site_name: string;
+        summary: string;
+        author: string;
+        pubDate: string;
+        url: string;
+        text: string;
+      };
+
+      const searchRoot = document.querySelector("[data-site-search]");
+      const searchInput = document.querySelector<HTMLInputElement>("[data-search-input]");
+      const resultsEl = document.querySelector<HTMLUListElement>("[data-search-results]");
+
+      if (searchRoot && searchInput && resultsEl) {
+        let items: SearchItem[] = [];
+        let indexPromise: Promise<SearchItem[]> | null = null;
+        let debounceTimer = 0;
+        let activeIndex = -1;
+        let latestQuery = "";
+
+        function escapeHtml(value: string) {
+          return value
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;");
+        }
+
+        function formatDate(iso: string) {
+          const date = new Date(iso);
+          if (Number.isNaN(date.getTime())) return "";
+          return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+        }
+
+        async function loadIndex() {
+          if (items.length) return items;
+          if (!indexPromise) {
+            indexPromise = fetch("/search-index.json")
+              .then(async (response) => {
+                if (!response.ok) throw new Error("Failed to load search index.");
+                const payload = await response.json();
+                return (payload.items || []) as SearchItem[];
+              })
+              .then((loaded) => {
+                items = loaded;
+                return items;
+              })
+              .catch((error) => {
+                indexPromise = null;
+                throw error;
+              });
+          }
+          return indexPromise;
+        }
+
+        function setOpen(open: boolean) {
+          resultsEl.hidden = !open;
+          searchInput.setAttribute("aria-expanded", String(open));
+          if (!open) activeIndex = -1;
+        }
+
+        function renderStatus(message: string) {
+          resultsEl.innerHTML = `<li class="site-search-status" role="presentation">${escapeHtml(message)}</li>`;
+          setOpen(true);
+        }
+
+        function renderResults(matches: SearchItem[]) {
+          if (!matches.length) {
+            resultsEl.innerHTML =
+              '<li class="site-search-empty" role="presentation">No articles found.</li>';
+            setOpen(true);
+            activeIndex = -1;
+            return;
+          }
+
+          resultsEl.innerHTML = matches
+            .map((item, index) => {
+              const meta = [item.site_name, formatDate(item.pubDate)].filter(Boolean).join(" · ");
+              return `<li role="option" id="search-option-${index}">
+                <a href="${escapeHtml(item.url)}" data-result-index="${index}">
+                  <span class="result-title">${escapeHtml(item.title)}</span>
+                  <span class="result-meta">${escapeHtml(meta)}</span>
+                </a>
+              </li>`;
+            })
+            .join("");
+          setOpen(true);
+          activeIndex = -1;
+        }
+
+        function scoreItem(item: SearchItem, terms: string[]) {
+          let score = 0;
+          const title = item.title.toLowerCase();
+          for (const term of terms) {
+            if (title.includes(term)) score += 5;
+            if (item.site_name.toLowerCase().includes(term)) score += 2;
+            if (item.text.includes(term)) score += 1;
+          }
+          return score;
+        }
+
+        async function runSearch(query: string) {
+          latestQuery = query;
+          const trimmed = query.trim().toLowerCase();
+          if (trimmed.length < 2) {
+            resultsEl.innerHTML = "";
+            setOpen(false);
+            return;
+          }
+
+          renderStatus("Searching…");
+
+          try {
+            const catalog = await loadIndex();
+            if (latestQuery !== query) return;
+
+            const terms = trimmed.split(/\s+/).filter(Boolean);
+            const matches = catalog
+              .map((item) => ({ item, score: scoreItem(item, terms) }))
+              .filter((entry) => {
+                if (entry.score <= 0) return false;
+                if (!terms.every((term) => entry.item.text.includes(term))) return false;
+                const hideRead = Boolean(
+                  (window as unknown as { Alpine?: any }).Alpine?.store?.("filters")
+                    ?.hideRead,
+                );
+                if (
+                  hideRead &&
+                  (window as unknown as { Alpine?: any }).Alpine?.store?.("reads")?.isRead?.(
+                    entry.item.id,
+                  )
+                ) {
+                  return false;
+                }
+                return true;
+              })
+              .sort((a, b) => b.score - a.score || b.item.pubDate.localeCompare(a.item.pubDate))
+              .slice(0, 8)
+              .map((entry) => entry.item);
+
+            if (latestQuery !== query) return;
+            renderResults(matches);
+          } catch {
+            if (latestQuery !== query) return;
+            renderStatus("Search unavailable right now.");
+          }
+        }
+
+        function moveActive(delta: number) {
+          const options = resultsEl.querySelectorAll<HTMLAnchorElement>("a[data-result-index]");
+          if (!options.length) return;
+          activeIndex = (activeIndex + delta + options.length) % options.length;
+          options.forEach((option, index) => {
+            option.setAttribute("aria-selected", String(index === activeIndex));
+          });
+          options[activeIndex]?.scrollIntoView({ block: "nearest" });
+        }
+
+        searchInput.addEventListener("input", () => {
+          window.clearTimeout(debounceTimer);
+          const value = searchInput.value;
+          debounceTimer = window.setTimeout(() => {
+            void runSearch(value);
+          }, 180);
+        });
+
+        searchInput.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            moveActive(1);
+          } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            moveActive(-1);
+          } else if (event.key === "Enter" && activeIndex >= 0) {
+            const selected = resultsEl.querySelector<HTMLAnchorElement>(
+              `a[data-result-index="${activeIndex}"]`,
+            );
+            if (selected) {
+              event.preventDefault();
+              window.location.href = selected.href;
+            }
+          } else if (event.key === "Escape") {
+            setOpen(false);
+            searchInput.blur();
+          }
+        });
+
+        searchInput.addEventListener("focus", () => {
+          if (searchInput.value.trim().length >= 2 && resultsEl.childElementCount) {
+            setOpen(true);
+          }
+          void loadIndex();
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!searchRoot.contains(event.target as Node)) {
+            setOpen(false);
+          }
+        });
+
+        window.addEventListener("technews:filters-changed", () => {
+          if (searchInput.value.trim().length >= 2) {
+            void runSearch(searchInput.value);
+          }
+        });
+      }
+    </script>
+    <script>
+      import Alpine from "alpinejs";
+      import {
+        startAuthentication,
+        startRegistration,
+      } from "@simplewebauthn/browser";
+      import { loadReadIds, saveReadIds } from "../lib/read-status";
+
+      type LightboxStore = {
+        src: string | null;
+        open(src: string | null | undefined): void;
+        close(): void;
+      };
+
+      type FiltersStore = {
+        hideRead: boolean;
+        init(): void;
+        persist(): void;
+        setHideRead(value: boolean): void;
+      };
+
+      type AuthStore = {
+        userId: string | null;
+        open: boolean;
+        status: string;
+        init(): Promise<void>;
+        register(): Promise<void>;
+        login(): Promise<void>;
+        logout(): Promise<void>;
+        syncReads(): Promise<void>;
+        pushRead(id: string, read: boolean): void;
+      };
+
+      type ReadsStore = {
+        ids: Record<string, true>;
+        init(): void;
+        isRead(id: string): boolean;
+        setRead(id: string, read: boolean): void;
+        replaceAll(ids: string[]): void;
+        observeEnd(articleId: string, target: Element | null | undefined): void;
+      };
+
+      type FeedArticle = {
+        id: string;
+        title: string;
+        site_name: string;
+        category: string;
+        readingTime: string;
+        pubDate: string;
+        url: string;
+      };
+
+      document.addEventListener("alpine:init", () => {
+        const filtersStore: FiltersStore = {
+          hideRead: true,
+          init() {
+            this.hideRead = true;
+            localStorage.setItem("technews-hide-read", "1");
+          },
+          persist() {
+            localStorage.setItem("technews-hide-read", "1");
+            window.dispatchEvent(new CustomEvent("technews:filters-changed"));
+          },
+          setHideRead(_value: boolean) {
+            this.hideRead = true;
+            this.persist();
+          },
+        };
+
+        Alpine.store("filters", filtersStore);
+
+        Alpine.data("homeFeed", () => {
+          const feedNode = document.getElementById("technews-feed-data");
+          const categoriesNode = document.getElementById(
+            "technews-feed-categories",
+          );
+          const articles = feedNode?.textContent
+            ? (JSON.parse(feedNode.textContent) as FeedArticle[])
+            : [];
+          const categories = categoriesNode?.textContent
+            ? (JSON.parse(categoriesNode.textContent) as string[])
+            : [];
+
+          return {
+            articles,
+            categories,
+            categoryOpen: false,
+            filtersOpen: false,
+            selected: [] as string[],
+            pageSize: 24,
+            visibleCount: 24,
+            observer: null as IntersectionObserver | null,
+
+            init() {
+              this.$watch("selected", () => this.resetPaging());
+              this.$watch(
+                () => (Alpine.store("filters") as FiltersStore).hideRead,
+                () => this.resetPaging(),
+              );
+
+              this.$nextTick(() => this.setupObserver());
+              this.$watch("hasMore", () => {
+                this.$nextTick(() => this.setupObserver());
+              });
+            },
+
+            setupObserver() {
+              const sentinel = this.$refs.sentinel;
+              if (!(sentinel instanceof Element)) {
+                return;
+              }
+              this.observer?.disconnect();
+              this.observer = new IntersectionObserver(
+                (entries) => {
+                  if (entries.some((entry) => entry.isIntersecting)) {
+                    this.loadMore();
+                  }
+                },
+                { root: null, rootMargin: "600px 0px", threshold: 0 },
+              );
+              this.observer.observe(sentinel);
+            },
+
+            get categoryActive() {
+              return this.selected.length > 0;
+            },
+
+            get filtered() {
+              const readMap = (Alpine.store("reads") as ReadsStore).ids;
+              const hideRead = (Alpine.store("filters") as FiltersStore).hideRead;
+              return this.articles.filter((article) => {
+                if (
+                  this.selected.length > 0 &&
+                  !this.selected.includes(article.category)
+                ) {
+                  return false;
+                }
+                if (hideRead && readMap[article.id]) {
+                  return false;
+                }
+                return true;
+              });
+            },
+
+            get visible() {
+              return this.filtered.slice(0, this.visibleCount);
+            },
+
+            get hasMore() {
+              return this.visibleCount < this.filtered.length;
+            },
+
+            resetPaging() {
+              this.visibleCount = this.pageSize;
+            },
+
+            loadMore() {
+              if (!this.hasMore) {
+                return;
+              }
+              this.visibleCount = Math.min(
+                this.visibleCount + this.pageSize,
+                this.filtered.length,
+              );
+            },
+
+            formatDate(iso: string) {
+              const date = new Date(iso);
+              if (Number.isNaN(date.getTime())) {
+                return "";
+              }
+              return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+            },
+          };
+        });
+
+        const lightboxStore: LightboxStore = {
+          src: null,
+          open(src) {
+            if (!src) {
+              return;
+            }
+            this.src = src;
+            document.documentElement.classList.add("lightbox-open");
+          },
+          close() {
+            this.src = null;
+            document.documentElement.classList.remove("lightbox-open");
+          },
+        };
+
+        Alpine.store("lightbox", lightboxStore);
+
+        const authStore: AuthStore = {
+          userId: null,
+          open: false,
+          status: "",
+
+          async init() {
+            try {
+              const response = await fetch("/api/auth/me", {
+                credentials: "same-origin",
+              });
+              const payload = (await response.json()) as {
+                authenticated?: boolean;
+                userId?: string;
+              };
+              if (payload.authenticated && payload.userId) {
+                this.userId = payload.userId;
+                await this.syncReads();
+              }
+            } catch {
+              this.status = "Could not restore session.";
+            }
+          },
+
+          async register() {
+            this.status = "Create a passkey…";
+            try {
+              const optionsRes = await fetch("/api/auth/register/options", {
+                method: "POST",
+                credentials: "same-origin",
+              });
+              const optionsPayload = await optionsRes.json();
+              if (!optionsRes.ok) {
+                throw new Error(optionsPayload.error || "Failed to start registration");
+              }
+
+              const credential = await startRegistration({
+                optionsJSON: optionsPayload.options,
+              });
+
+              const verifyRes = await fetch("/api/auth/register/verify", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  challengeId: optionsPayload.challengeId,
+                  response: credential,
+                }),
+              });
+              const verifyPayload = await verifyRes.json();
+              if (!verifyRes.ok) {
+                throw new Error(verifyPayload.error || "Registration failed");
+              }
+
+              this.userId = verifyPayload.userId;
+              this.open = false;
+              this.status = "Passkey created.";
+              await this.syncReads();
+            } catch (error) {
+              this.status =
+                error instanceof Error ? error.message : "Registration failed.";
+            }
+          },
+
+          async login() {
+            this.status = "Checking passkey…";
+            try {
+              const optionsRes = await fetch("/api/auth/login/options", {
+                method: "POST",
+                credentials: "same-origin",
+              });
+              const optionsPayload = await optionsRes.json();
+              if (!optionsRes.ok) {
+                throw new Error(optionsPayload.error || "Failed to start login");
+              }
+
+              const assertion = await startAuthentication({
+                optionsJSON: optionsPayload.options,
+              });
+
+              const verifyRes = await fetch("/api/auth/login/verify", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  challengeId: optionsPayload.challengeId,
+                  response: assertion,
+                }),
+              });
+              const verifyPayload = await verifyRes.json();
+              if (!verifyRes.ok) {
+                throw new Error(verifyPayload.error || "Login failed");
+              }
+
+              this.userId = verifyPayload.userId;
+              this.open = false;
+              this.status = "Signed in.";
+              await this.syncReads();
+            } catch (error) {
+              this.status =
+                error instanceof Error ? error.message : "Login failed.";
+            }
+          },
+
+          async logout() {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "same-origin",
+            });
+            this.userId = null;
+            this.open = false;
+            this.status = "Signed out.";
+          },
+
+          async syncReads() {
+            const localIds = loadReadIds();
+            const response = await fetch("/api/reads", {
+              credentials: "same-origin",
+            });
+            if (!response.ok) {
+              return;
+            }
+            const payload = (await response.json()) as { ids?: string[] };
+            const remoteIds = Array.isArray(payload.ids) ? payload.ids : [];
+            const merged = [...new Set([...localIds, ...remoteIds])];
+            (Alpine.store("reads") as ReadsStore).replaceAll(merged);
+            await fetch("/api/reads", {
+              method: "PUT",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ids: merged }),
+            });
+          },
+
+          pushRead(id, read) {
+            if (!this.userId || !id) {
+              return;
+            }
+            void fetch("/api/reads", {
+              method: "PATCH",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, read }),
+            });
+          },
+        };
+
+        Alpine.store("auth", authStore);
+
+        const readsStore: ReadsStore = {
+          ids: {},
+
+          init() {
+            const map: Record<string, true> = {};
+            for (const id of loadReadIds()) {
+              map[id] = true;
+            }
+            this.ids = map;
+          },
+
+          isRead(id) {
+            return Boolean(this.ids[id]);
+          },
+
+          replaceAll(ids) {
+            const map: Record<string, true> = {};
+            for (const id of ids) {
+              if (id) {
+                map[id] = true;
+              }
+            }
+            this.ids = map;
+            saveReadIds(Object.keys(this.ids));
+          },
+
+          setRead(id, read) {
+            if (!id) {
+              return;
+            }
+
+            if (read) {
+              if (this.ids[id]) {
+                return;
+              }
+              this.ids = { ...this.ids, [id]: true };
+            } else {
+              if (!this.ids[id]) {
+                return;
+              }
+              const next = { ...this.ids };
+              delete next[id];
+              this.ids = next;
+            }
+
+            saveReadIds(Object.keys(this.ids));
+            (Alpine.store("auth") as AuthStore).pushRead(id, read);
+          },
+
+          observeEnd(articleId, target) {
+            if (!articleId || !(target instanceof Element)) {
+              return;
+            }
+
+            if (this.isRead(articleId)) {
+              return;
+            }
+
+            const observer = new IntersectionObserver(
+              (entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) {
+                  return;
+                }
+                this.setRead(articleId, true);
+                observer.disconnect();
+              },
+              { root: null, threshold: 0, rootMargin: "0px 0px -8% 0px" },
+            );
+
+            observer.observe(target);
+          },
+        };
+
+        Alpine.store("reads", readsStore);
+      });
+
+      Object.assign(window, { Alpine });
+      Alpine.start();
+      void (Alpine.store("auth") as AuthStore).init();
+    </script>
+  </body>
+</html>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

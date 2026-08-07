@@ -1,0 +1,13 @@
+---
+title: "X / Twitter OAuth 2.0 is now available for Supabase Auth"
+link: "https://supabase.com/blog/x-twitter-oauth-2-provider"
+guid: "https://supabase.com/blog/x-twitter-oauth-2-provider"
+pubDate: "2026-02-06T07:00:00.000Z"
+site_name: "Supabase"
+site_feed: "https://supabase.com/feed.xml"
+category: "Platforms"
+summary: "You can now add \"Sign in with X\" to your application using the new X / Twitter (OAuth 2.0) provider in Supabase Auth."
+contentHtml: "<article><div>\n<p>You can now add \"Sign in with X\" to your application using the new <strong>X / Twitter (OAuth 2.0)</strong> provider in Supabase Auth.</p>\n<p>The new provider uses X's OAuth 2.0 implementation, replacing the legacy OAuth 1.0a flow. OAuth 2.0 offers a more modern authentication experience with better security practices, including PKCE support.</p>\n<p>Setting up X / Twitter authentication takes a few steps:</p>\n<ol>\n<li>Create an OAuth 2.0 app in the <a target=\"_blank\" href=\"https://developer.x.com/en/portal/dashboard\">X Developer Portal</a></li>\n<li>Enable \"Request email from users\" in your app's authentication settings</li>\n<li>Add your callback URL from the Supabase dashboard</li>\n<li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> from the \"Keys and tokens\" section</li>\n<li>Enter these credentials in <strong>Authentication &gt; Providers &gt; X / Twitter (OAuth 2.0)</strong> in the Supabase dashboard</li>\n</ol>\n<p>Once configured, you can use the Supabase client libraries to authenticate users via X / Twitter:</p>\n<div><p><code><br><div><p><span>_<!-- -->10</span></p><p><span>const { data, error } = await supabase.auth.signInWithOAuth({</span></p></div><div><p><span>_<!-- -->10</span></p><p><span>  provider: 'x',</span></p></div><div><p><span>_<!-- -->10</span></p><p><span>})</span></p></div><br></code></p></div>\n<p>For a complete guide on setting up X / Twitter authentication, see the <a target=\"_blank\" href=\"https://supabase.com/docs/guides/auth/social-login/auth-twitter\">full documentation</a>.</p>\n<p>If you're currently using the legacy <strong>Twitter (OAuth 1.0a)</strong> provider, we recommend migrating to the new OAuth 2.0 provider. The legacy provider will remain available while X / Twitter continues to support OAuth 1.0a.</p>\n<ul>\n<li><a target=\"_blank\" href=\"https://supabase.com/docs/guides/auth/social-login/auth-twitter\">X / Twitter Auth documentation</a></li>\n<li><a target=\"_blank\" href=\"https://supabase.com/docs/guides/auth/social-login\">Social Login overview</a></li>\n</ul></div></article>"
+---
+
+You can now add "Sign in with X" to your application using the new X / Twitter (OAuth 2.0) provider in Supabase Auth.

@@ -1,0 +1,9 @@
+---
+title: "Accelerate ND-Parallel: A guide to Efficient Multi-GPU Training"
+link: "https://huggingface.co/blog/accelerate-nd-parallel"
+guid: "https://huggingface.co/blog/accelerate-nd-parallel"
+pubDate: "2025-08-08T00:00:00.000Z"
+site_name: "Hugging Face"
+site_feed: "https://huggingface.co/blog/feed.xml"
+category: "AI"
+---

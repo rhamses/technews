@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-08-06",
+	"compatibility_flags": ["global_fetch_strictly_public", "nodejs_compat"],
+	"name": "technews",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"ai": {
+		"binding": "AI",
+		"remote": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "technews",
+			"database_id": "eb60ba73-4d2c-4ea7-b7ac-7257ef2adad9",
+			"migrations_dir": "migrations"
+		}
+	]
+}

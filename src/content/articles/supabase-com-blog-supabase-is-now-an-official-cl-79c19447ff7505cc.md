@@ -1,0 +1,13 @@
+---
+title: "Supabase is now an official Claude connector"
+link: "https://supabase.com/blog/supabase-is-now-an-official-claude-connector"
+guid: "https://supabase.com/blog/supabase-is-now-an-official-claude-connector"
+pubDate: "2026-02-03T07:00:00.000Z"
+site_name: "Supabase"
+site_feed: "https://supabase.com/feed.xml"
+category: "Platforms"
+summary: "Connect your Supabase projects to Claude and manage your entire database infrastructure by telling Claude what you need."
+contentHtml: "<article><div><p>The Supabase MCP server is now listed on Claude's official connectors. Connect your Supabase projects to Claude and manage your entire database infrastructure by telling Claude what you need.</p>\n<p>With the Supabase MCP server, you can execute SQL queries, modify schemas, deploy edge functions, manage branches, and troubleshoot your projects without leaving your conversation with Claude.</p>\n<p>Ask Claude to check security advisors on your project and fix any issues. Request a schema change and Claude executes it. Deploy an edge function with a single prompt.</p>\n<p></p>\n<p>The Supabase MCP server includes 32 tools covering the entire platform:</p>\n<ul>\n<li><strong>Database management</strong>: Execute SQL queries on PostgreSQL databases, design and modify table schemas, list tables and extensions, generate TypeScript types for your schema, get security recommendations.</li>\n<li><strong>Project operations</strong>: List and create projects, get cost estimates, pause and restore projects, access real-time logs.</li>\n<li><strong>Branching and migrations</strong>: Create development branches, merge changes, rebase and reset branches, list and apply migrations.</li>\n<li><strong>Storage</strong>: Manage storage buckets and settings.</li>\n<li><strong>Edge functions</strong>: List, deploy, and manage serverless functions.</li>\n<li><strong>Documentation</strong>: Search Supabase docs directly from Claude.</li>\n</ul>\n<p>In Claude.ai or Claude Desktop, open the connectors menu and select Supabase. Authorize Claude to access your Supabase organization.</p>\n<p>The connector works on all Supabase plans and all paid Claude plans (Pro, Team, Enterprise, Max).</p>\n<p>If you don't have a Supabase account yet, start your project for free at <a target=\"_blank\" href=\"https://supabase.com/\">supabase.com</a>. Then connect it to Claude and manage your projects by describing what you need.</p>\n<p>Read the documentation at <a target=\"_blank\" href=\"https://supabase.com/docs/guides/getting-started/mcp\">supabase.com/docs/guides/getting-started/mcp</a>.</p></div></article>"
+---
+
+Connect your Supabase projects to Claude and manage your entire database infrastructure by telling Claude what you need.

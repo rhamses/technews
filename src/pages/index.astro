@@ -1,0 +1,188 @@
+---
+export const prerender = true;
+
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import categoriesSource from "../../sources/_categories.md?raw";
+import {
+  estimateReadingMinutes,
+  formatReadingTime,
+} from "../lib/reading-time";
+
+const articles = (await getCollection("articles")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+function parseCategories(raw: string): string[] {
+  const match = raw.match(/categories:\s*\n((?:[ \t]*-[ \t]*.+\n?)+)/);
+  if (!match) {
+    return [];
+  }
+
+  return match[1]
+    .split("\n")
+    .map((line) => line.replace(/^[ \t]*-[ \t]*/, "").trim())
+    .filter(Boolean);
+}
+
+const categories = parseCategories(categoriesSource);
+
+const feedItems = articles.map((article) => ({
+  id: article.id,
+  title: article.data.title,
+  site_name: article.data.site_name,
+  category: article.data.category,
+  readingTime: formatReadingTime(
+    estimateReadingMinutes([
+      article.data.contentHtml,
+      article.data.summary,
+      article.body,
+    ]),
+  ),
+  pubDate: article.data.pubDate.toISOString(),
+  url: `/article/${article.id}/`,
+}));
+
+const feedPayload = JSON.stringify(feedItems).replace(/</g, "\\u003c");
+const categoriesPayload = JSON.stringify(categories).replace(/</g, "\\u003c");
+---
+
+<BaseLayout
+  title="Technews"
+  description="A minimalist RSS reader for technology headlines."
+>
+  <script
+    type="application/json"
+    id="technews-feed-data"
+    set:html={feedPayload}
+  ></script>
+  <script
+    type="application/json"
+    id="technews-feed-categories"
+    set:html={categoriesPayload}
+  ></script>
+
+  <div
+    class="home-feed"
+    x-data="homeFeed"
+    @keydown.escape.window="categoryOpen = false; filtersOpen = false"
+  >
+    <section class="hero">
+      <div class="hero-row">
+        <p>Quiet reading for tech headlines, freshly pulled from trusted feeds.</p>
+        <div class="feed-controls">
+          <div class="category-filter" x-show="categories.length > 0">
+            <button
+              type="button"
+              class="category-trigger"
+              @click="categoryOpen = !categoryOpen; filtersOpen = false"
+              :aria-expanded="categoryOpen.toString()"
+              :data-active="categoryActive.toString()"
+            >
+              Categories
+              <span
+                class="category-count"
+                x-show="categoryActive"
+                x-text="selected.length"
+                x-cloak
+              ></span>
+              <span class="category-caret" aria-hidden="true"></span>
+            </button>
+            <div
+              class="category-panel"
+              x-show="categoryOpen"
+              x-cloak
+              @click.outside="categoryOpen = false"
+            >
+              <template x-for="category in categories" :key="category">
+                <label class="category-option">
+                  <input type="checkbox" :value="category" x-model="selected" />
+                  <span x-text="category"></span>
+                </label>
+              </template>
+            </div>
+          </div>
+
+          <div class="category-filter">
+            <button
+              type="button"
+              class="category-trigger"
+              @click="filtersOpen = !filtersOpen; categoryOpen = false"
+              :aria-expanded="filtersOpen.toString()"
+              data-active="true"
+            >
+              Filters
+              <span class="category-count">1</span>
+              <span class="category-caret" aria-hidden="true"></span>
+            </button>
+            <div
+              class="category-panel"
+              x-show="filtersOpen"
+              x-cloak
+              @click.outside="filtersOpen = false"
+            >
+              <label class="category-option category-option-locked">
+                <input type="checkbox" checked disabled />
+                <span>Hide read</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <template x-if="articles.length === 0">
+      <p class="empty">No articles yet. Add sources and run ingest.</p>
+    </template>
+
+    <template x-if="articles.length > 0">
+      <div>
+        <ol class="article-list">
+          <template x-for="article in visible" :key="article.id">
+            <li
+              class="article-card"
+              :class="{ 'is-read': $store.reads.isRead(article.id) }"
+            >
+              <label
+                class="article-read-toggle"
+                title="Mark as read"
+                @click.stop
+              >
+                <input
+                  type="checkbox"
+                  :checked="$store.reads.isRead(article.id)"
+                  @click.stop
+                  @change="$store.reads.setRead(article.id, $event.target.checked); if ($store.filters.hideRead) resetPaging()"
+                  aria-label="Mark as read"
+                />
+              </label>
+              <a :href="article.url">
+                <span class="article-title" x-text="article.title"></span>
+                <span class="meta">
+                  <span x-text="article.site_name"></span>
+                  <span x-text="article.category"></span>
+                  <span x-text="article.readingTime"></span>
+                  <time
+                    :datetime="article.pubDate"
+                    x-text="formatDate(article.pubDate)"
+                  ></time>
+                </span>
+              </a>
+            </li>
+          </template>
+        </ol>
+
+        <p class="empty" x-show="filtered.length === 0" x-cloak>
+          No articles match the current filters.
+        </p>
+
+        <div
+          class="infinite-scroll-sentinel"
+          x-ref="sentinel"
+          x-show="hasMore"
+          aria-hidden="true"
+        ></div>
+      </div>
+    </template>
+  </div>
+</BaseLayout>

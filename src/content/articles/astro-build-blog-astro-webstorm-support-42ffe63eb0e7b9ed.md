@@ -1,0 +1,13 @@
+---
+title: "WebStorm announces official support for Astro"
+link: "https://astro.build/blog/astro-webstorm-support/"
+guid: "https://astro.build/blog/astro-webstorm-support/"
+pubDate: "2023-02-03T00:00:00.000Z"
+site_name: "Astro"
+site_feed: "https://astro.build/rss.xml"
+category: "Web"
+summary: "WebStorm, the popular IDE for Javascript by JetBrains, has announced initial support for Astro. Features include syntax highlighting, code completion, refactorings, navigation, intentions, code folding, Emmet support, and correct formatting."
+contentHtml: "<article><p>The Astro ecosystem continues to grow!</p>\n<p><a target=\"_blank\" href=\"https://www.jetbrains.com/webstorm/\">WebStorm</a> – a popular integrated development environment (IDE) for Javascript and related technologies by <a target=\"_blank\" href=\"https://twitter.com/JetBrains\">JetBrains</a> – has just announced initial support for Astro.</p>\n<p>With today’s update, WebStorm users get an improved development experience for Astro projects. New features include syntax highlighting, code completion, automatic imports, refactorings, navigation, intentions, code folding, Emmet support, and auto formatting.</p>\n<p>To get started: <a target=\"_blank\" href=\"https://plugins.jetbrains.com/plugin/20959-astro?_gl=1*petsct*_ga*MTA1NTkwNTk0Ni4xNjc1NDQzMjM0*_ga_9J976DJZ68*MTY3NTQ0MzIzNC4xLjEuMTY3NTQ0NDcwNC4wLjAuMA..&_ga=2.206005648.2026736914.1675443234-1055905946.1675443234\">Download the official Astro plugin</a> from the JetBrains Marketplace. You can also install it directly from inside your WebStorm IDE by going to Preferences / Settings and searching for “Astro” in Plugins.</p>\n<p>WebStorm is planning to add <a target=\"_blank\" href=\"https://blog.jetbrains.com/webstorm/2023/02/webstorm-2023-1-eap-3/\">even more advanced features</a> for Astro going forward. Needless to say, we’re pretty excited. And other people seem pretty excited too:</p>\n<blockquote><p>yessss, please, inject astro support into my veins</p><p>— pyotr (@saintpyotr) <a target=\"_blank\" href=\"https://twitter.com/saintpyotr/status/1621529196815331328?ref_src=twsrc%5Etfw\">February 3, 2023</a></p></blockquote>\n<p>In the meantime, we hope WebStorm users enjoy the new and improved Astro developer experience. Give it a try, and let us know how it goes on <a target=\"_blank\" href=\"https://twitter.com/astrodotbuild\">Twitter.</a></p>\n</article>"
+---
+
+WebStorm, the popular IDE for Javascript by JetBrains, has announced initial support for Astro. Features include syntax highlighting, code completion, refactorings, navigation, intentions, code folding, Emmet support, and correct formatting.

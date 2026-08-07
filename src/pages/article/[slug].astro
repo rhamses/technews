@@ -1,0 +1,248 @@
+---
+export const prerender = true;
+
+import { getCollection, render } from "astro:content";
+import { Icon } from "astro-icon/components";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { enhanceArticleHtml } from "../../lib/enhance-article-html";
+
+export async function getStaticPaths() {
+  const articles = await getCollection("articles");
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+const enhancedHtml = article.data.contentHtml
+  ? await enhanceArticleHtml(article.data.contentHtml)
+  : null;
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+const description =
+  article.data.summary ||
+  `Article from ${article.data.site_name}, collected by Technews.`;
+
+const languages = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "pt", label: "Portuguese" },
+  { code: "it", label: "Italian" },
+  { code: "nl", label: "Dutch" },
+  { code: "ru", label: "Russian" },
+  { code: "ja", label: "Japanese" },
+  { code: "zh", label: "Chinese" },
+  { code: "hi", label: "Hindi" },
+  { code: "ar", label: "Arabic" },
+];
+---
+
+<BaseLayout
+  title={article.data.title}
+  description={description}
+  canonical={article.data.link}
+>
+  <article
+    class="article-page"
+    data-article
+    data-article-id={article.id}
+    x-data
+    x-init={`$store.reads.observeEnd(${JSON.stringify(article.id)}, $refs.readEnd)`}
+  >
+    <a class="back-link" href="/">
+      <Icon name="lucide:arrow-left" />
+      All articles
+    </a>
+
+    <h1 data-article-title>{article.data.title}</h1>
+
+    <div class="meta">
+      <span>{article.data.site_name}</span>
+      {
+        article.data.author && (
+          <span>{article.data.author}</span>
+        )
+      }
+      <time datetime={article.data.pubDate.toISOString()}>
+        {formatDate(article.data.pubDate)}
+      </time>
+    </div>
+
+    <div class="article-toolbar">
+      <label>
+        <Icon name="lucide:languages" />
+        <span>Translate</span>
+        <select data-lang-select aria-label="Target language">
+          {
+            languages.map((language) => (
+              <option value={language.code}>{language.label}</option>
+            ))
+          }
+        </select>
+      </label>
+      <button type="button" data-translate-btn>
+        <Icon name="lucide:languages" />
+        Translate
+      </button>
+      <button type="button" data-original-btn hidden>Show original</button>
+      <p class="status" data-translate-status aria-live="polite"></p>
+    </div>
+
+    {
+      enhancedHtml ? (
+        <div
+          class="article-body"
+          data-article-body
+          set:html={enhancedHtml}
+          @click={`
+            const trigger = $event.target.closest('.article-lightbox-trigger');
+            if (trigger) {
+              $event.preventDefault();
+              $store.lightbox.open(trigger.getAttribute('data-lightbox-src'));
+            }
+          `}
+        />
+      ) : (
+        <div
+          class="article-body"
+          data-article-body
+          @click={`
+            const trigger = $event.target.closest('.article-lightbox-trigger');
+            if (trigger) {
+              $event.preventDefault();
+              $store.lightbox.open(trigger.getAttribute('data-lightbox-src'));
+            }
+          `}
+        >
+          <Content />
+        </div>
+      )
+    }
+
+    <a class="original-link" href={article.data.link} rel="noopener noreferrer">
+      Read original
+      <Icon name="lucide:external-link" />
+    </a>
+
+    <div class="article-read-end" x-ref="readEnd" aria-hidden="true"></div>
+  </article>
+</BaseLayout>
+
+<script>
+  const articleRoot = document.querySelector("[data-article]");
+  if (articleRoot) {
+    const titleEl = articleRoot.querySelector("[data-article-title]");
+    const bodyEl = articleRoot.querySelector("[data-article-body]");
+    const langSelect = articleRoot.querySelector<HTMLSelectElement>("[data-lang-select]");
+    const translateBtn = articleRoot.querySelector<HTMLButtonElement>("[data-translate-btn]");
+    const originalBtn = articleRoot.querySelector<HTMLButtonElement>("[data-original-btn]");
+    const statusEl = articleRoot.querySelector("[data-translate-status]");
+
+    // Wrap leftover images (markdown Content path) for lightbox.
+    if (bodyEl) {
+      for (const img of bodyEl.querySelectorAll("img")) {
+        if (img.closest("button.article-lightbox-trigger")) {
+          continue;
+        }
+        const src =
+          img.getAttribute("src")?.trim() ||
+          img.getAttribute("srcset")?.split(",")?.at(-1)?.trim().split(/\s+/)[0];
+        if (!src || src.startsWith("data:")) {
+          continue;
+        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "article-lightbox-trigger";
+        button.setAttribute("data-lightbox-src", src);
+        button.setAttribute(
+          "aria-label",
+          img.getAttribute("alt")?.trim() || "View larger image",
+        );
+        const parentLink = img.closest("a");
+        if (parentLink && parentLink.querySelectorAll("img").length === 1) {
+          parentLink.replaceWith(button);
+        } else {
+          img.replaceWith(button);
+        }
+        button.appendChild(img);
+      }
+    }
+
+    if (titleEl && bodyEl && langSelect && translateBtn && originalBtn && statusEl) {
+      const originalTitle = titleEl.textContent || "";
+      const originalBody = bodyEl.innerHTML;
+
+      function setBusy(busy: boolean) {
+        translateBtn.disabled = busy;
+        langSelect.disabled = busy;
+        statusEl.textContent = busy ? "Translating…" : "";
+      }
+
+      translateBtn.addEventListener("click", async () => {
+        const targetLang = langSelect.value;
+        const plainBody = bodyEl.innerText.trim();
+        if (!plainBody) {
+          statusEl.textContent = "Nothing to translate.";
+          return;
+        }
+
+        setBusy(true);
+        try {
+          const response = await fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: originalTitle,
+              text: plainBody,
+              target_lang: targetLang,
+            }),
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || "Translation failed.");
+          }
+
+          const escapeHtml = (value: string) =>
+            value
+              .replaceAll("&", "&amp;")
+              .replaceAll("<", "&lt;")
+              .replaceAll(">", "&gt;")
+              .replaceAll('"', "&quot;");
+
+          titleEl.textContent = payload.title || originalTitle;
+          bodyEl.innerHTML = String(payload.text || "")
+            .split(/\n+/)
+            .filter(Boolean)
+            .map((paragraph: string) => `<p>${escapeHtml(paragraph)}</p>`)
+            .join("");
+          originalBtn.hidden = false;
+          statusEl.textContent = `Translated to ${langSelect.selectedOptions[0]?.label || targetLang}.`;
+        } catch (error) {
+          statusEl.textContent =
+            error instanceof Error ? error.message : "Translation failed.";
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      originalBtn.addEventListener("click", () => {
+        titleEl.textContent = originalTitle;
+        bodyEl.innerHTML = originalBody;
+        originalBtn.hidden = true;
+        statusEl.textContent = "";
+      });
+    }
+  }
+</script>

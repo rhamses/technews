@@ -1,0 +1,13 @@
+---
+title: "ClickHouse at Percona Live Europe 2018"
+link: "https://clickhouse.com/blog/click-house-at-percona-live-europe-2018"
+guid: "https://clickhouse.com/blog/click-house-at-percona-live-europe-2018"
+pubDate: "2018-11-18T00:00:00.000Z"
+site_name: "ClickHouse"
+site_feed: "https://clickhouse.com/rss.xml"
+category: "Data"
+summary: "ClickHouse at Percona Live Europe 2018"
+contentHtml: "<article><div><p>Open-source database management systems conference <a target=\"_blank\" href=\"https://www.percona.com/live/e18/\">Percona Live</a> this time took place on November 5-7 in Germany, Frankfurt am Main. Over last couple years ClickHouse became a solid member of this community as demand in analytics with subsecond latencies appeared to be pretty high.</p>\n<p>There were three talks about ClickHouse in agenda, while only one of them was from Yandex. Also we had a lot of interesting conversations with conference attendees at ClickHouse booth sponsored by Altinity.</p>\n<p>Alexander Zaitsev, CTO and co-founder of Altinity, gives an overview of ClickHouse and then demonstrates case studies and best practices (<a target=\"_blank\" href=\"https://presentations.clickhouse.com/percona_europe_2018/\">slides</a>):\n<span><img alt=\"2018-percona-live-europe-1.jpeg\" src=\"https://clickhouse.com/_next/image?url=%2Fuploads%2F2018_percona_live_europe_1_0e0d5a37bb.jpeg&w=2048&q=75\"></span></p>\n<p>Fast! Flexible! Free! Fun!\n<span><img alt=\"2018-percona-live-europe-2.jpeg\" src=\"https://clickhouse.com/_next/image?url=%2Fuploads%2F2018_percona_live_europe_2_c8b6430e92.jpeg&w=2048&q=75\"></span></p>\n<p>Aleksey Milovidov, lead ClickHouse developer from Yandex, talks about unusual and unique ClickHouse features (<a target=\"_blank\" href=\"https://presentations.clickhouse.com/percona_europe_2018\">slides</a>):\n<span><img alt=\"2018-percona-live-europe-3.jpeg\" src=\"https://clickhouse.com/_next/image?url=%2Fuploads%2F2018_percona_live_europe_3_ac0d7a4d1e.jpeg&w=2048&q=75\"></span></p>\n<p>Aleksandar Aleksandrov and Felix Mattrat, data engineers from MessageBird, show how they use ClickHouse to analyze process of delivery of SMS and other kinds of messages (<a target=\"_blank\" href=\"http://presentations.clickhouse.com/percona_europe_2018/MessageBird.pdf\">slides</a>):\n<span><img alt=\"2018-percona-live-europe-4.jpeg\" src=\"https://clickhouse.com/_next/image?url=%2Fuploads%2F2018_percona_live_europe_4_5f9ff9db06.jpeg&w=2048&q=75\"></span>\nLive demo at ClickHouse booth by Alexey Milovidov:\n<span><img alt=\"2018-percona-live-europe-5.jpeg\" src=\"https://clickhouse.com/_next/image?url=%2Fuploads%2F2018_percona_live_europe_5_f38819f59d.jpeg&w=2048&q=75\"></span></p></div></article>"
+---
+
+ClickHouse at Percona Live Europe 2018

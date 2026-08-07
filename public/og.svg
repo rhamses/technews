@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1218"/>
+      <stop offset="100%" stop-color="#16374A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="96" y="300" fill="#E7EEF5" font-family="Sora, Arial, sans-serif" font-size="96" font-weight="700">Technews</text>
+  <text x="96" y="370" fill="#93A6B8" font-family="Source Sans 3, Arial, sans-serif" font-size="36">Minimalist tech RSS reader</text>
+</svg>

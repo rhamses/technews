@@ -1,0 +1,9 @@
+---
+title: "Accelerating Stable Diffusion Inference on Intel CPUs"
+link: "https://huggingface.co/blog/stable-diffusion-inference-intel"
+guid: "https://huggingface.co/blog/stable-diffusion-inference-intel"
+pubDate: "2023-03-28T00:00:00.000Z"
+site_name: "Hugging Face"
+site_feed: "https://huggingface.co/blog/feed.xml"
+category: "AI"
+---

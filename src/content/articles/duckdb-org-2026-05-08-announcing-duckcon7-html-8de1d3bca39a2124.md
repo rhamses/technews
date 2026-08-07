@@ -1,0 +1,17 @@
+---
+title: "Announcing the Program of DuckCon #7 Amsterdam"
+link: "https://duckdb.org/2026/05/08/announcing-duckcon7.html"
+guid: "https://duckdb.org/2026/05/08/announcing-duckcon7.html"
+pubDate: "2026-05-08T00:00:00.000Z"
+site_name: "DuckDB"
+site_feed: "https://duckdb.org/feed.xml"
+category: "Data"
+summary: "We are excited to announce the program of DuckCon #7 Amsterdam, DuckDB's user conference.\nThe event will be held on Wednesday, June 24, 2026, at the Royal Tropical Institute.\nThe program runs from 15:00 to 20:00 CEST.\nSee the registration link and the full program on the DuckCon #7 event page."
+author: "{\"twitter\" => \"none\", \"picture\" => \"/images/blog/authors/gabor_szarnyas.png\"}"
+contentHtml: "<div>\n\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t<p><img src=\"https://duckdb.org/images/blog/authors/gabor_szarnyas.png\" alt=\"Author Avatar\">\n\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t<p><span>Gábor Szárnyas</span></p><p><span>2026-05-08</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span>·</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span>30 sec</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<p><em>TL;DR: We are hosting DuckCon #7 in Amsterdam on June 24, 2026. Join us at the Royal Tropical Institute for talks, lightning sessions, and a borrel.</em></p>\n\t\t\t\t\t\t\t\t<p><img src=\"https://duckdb.org/images/events/thumbs/duckcon-7-amsterdam.svg\" alt=\"DuckCon #7 Splashscreen\"></p>\n<p>We are excited to announce the program of <strong>DuckCon #7 Amsterdam</strong>, DuckDB's user conference.\nThe event will be held on <strong>Wednesday, June 24, 2026</strong>, at the <a target=\"_blank\" href=\"https://www.kit.nl/about-us/\">Royal Tropical Institute</a>.\nThe program runs from <strong>15:00 to 20:00 CEST</strong>.</p>\n<p>See the registration link and the full program on the <a target=\"_blank\" href=\"https://duckdb.org/events/2026/06/24/duckcon7/\">DuckCon #7 event page</a>.</p>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t<div>\n\t\t<h2>\n\t\t\t\tRecent Posts\n\t\t</h2>\n\t\t<div>\n<div>\n\t<p><img src=\"https://duckdb.org/images/blog/thumbs/github-40k-stars.svg\" alt=\"Thank You for 40 000 Stars on GitHub\">\n\t</p>\n\t<div>\n\t\t<h3>Thank You for 40&#160;000 Stars on GitHub</h3>\n\t\t\t<div>\n\t\t\t\t\t<svg />\n\t\t\t\t<p><span>The DuckDB team</span></p>\n\t\t\t</div>\n\t</div>\n</div>\n<div>\n\t<p><img src=\"https://duckdb.org/images/blog/thumbs/async.svg\" alt=\"Asynchronous I/O in DuckDB: Work, Thread, Work\">\n\t</p>\n\t<div>\n\t\t<h3>Asynchronous I/O in DuckDB: Work, Thread, Work</h3>\n\t\t\t<div>\n\t\t\t\t\t<p><img src=\"https://duckdb.org/images/blog/authors/pedro_holanda.jpg\" alt=\"\"></p><p><span>Pedro Holanda</span></p>\n\t\t\t</div>\n\t</div>\n</div>\n<div>\n\t<p><img src=\"https://duckdb.org/images/blog/thumbs/duckdb-release-1-5-5.svg\" alt=\"Announcing DuckDB 1.5.5\">\n\t</p>\n\t<div>\n\t\t<h3>Announcing DuckDB 1.5.5</h3>\n\t\t\t<div>\n\t\t\t\t\t<svg />\n\t\t\t\t<p><span>The DuckDB team</span></p>\n\t\t\t</div>\n\t</div>\n</div>\n\t\t</div>\n\t\t<a target=\"_blank\" href=\"https://duckdb.org/news/\">\n\t\t\tAll blog posts <svg />\n\t\t</a>\n\t</div>\n\t\t\t</div>"
+---
+
+We are excited to announce the program of DuckCon #7 Amsterdam, DuckDB's user conference.
+The event will be held on Wednesday, June 24, 2026, at the Royal Tropical Institute.
+The program runs from 15:00 to 20:00 CEST.
+See the registration link and the full program on the DuckCon #7 event page.

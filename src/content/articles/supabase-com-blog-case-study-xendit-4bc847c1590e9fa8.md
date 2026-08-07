@@ -1,0 +1,13 @@
+---
+title: "Xendit Built a Counter-Fraud Watchlist for the Fintech Industry"
+link: "https://supabase.com/blog/case-study-xendit"
+guid: "https://supabase.com/blog/case-study-xendit"
+pubDate: "2020-12-02T07:00:00.000Z"
+site_name: "Supabase"
+site_feed: "https://supabase.com/feed.xml"
+category: "Platforms"
+summary: "See how Xendit use Supabase to build a full-text search engine."
+contentHtml: "<div>\n<p>As a payment processor, Xendit are responsible for verifying that all transactions are legal. Any transactions which are suspicions must be verified against a strict set of criteria, and the parties involved need to be checked against international sanctions lists. This is a critical anti-money-laundering operation and needs to be performed in realtime to prevent any delays on legitimate payments.</p>\n<p>Xendit needed something fast. Something that was cheaper than using the global players like Worldcheck or Refinitiv. Xendit already uses Postgres for a lot of their critical infrastructure, and so Xendit team are familiar with the technology and comfortable in it's ability to scale.</p>\n<p>Xendit parses international sanctions lists from the UN and the Indonesian government and loads them into Supabase. Since Supabase provides a full Postgres server, they can then use the <a target=\"_blank\" href=\"https://www.postgresql.org/docs/current/pgtrgm.html\">Trigram</a> extension to perform full-text search on the lists, with a relevance score on every search.</p>\n<p>Supabase was perfect for their use case, as they needed something built fast. The full solution was built and in production in less than one week.</p>\n<blockquote>\n<p>The full solution was built and in production in less than one week.</p>\n</blockquote>\n<p>Xendit created a database function for searching, which they are able to call directly using their Python clients. They have plans to iterate on the current implementation using more advanced techniques, like machine learning, but for now the Supabase system has been in Production for 9 months without a problem.</p></div>"
+---
+
+See how Xendit use Supabase to build a full-text search engine.
