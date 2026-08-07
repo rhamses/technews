@@ -2,7 +2,7 @@ name: Ingest feeds
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,13 +30,31 @@ jobs:
         run: npm run ingest
 
       - name: Commit ingested content
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/checkpoints.json src/content/articles
           if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No content changes."
             exit 0
           fi
           git commit -m "chore: ingest RSS feeds"
-          git push
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build site
+        if: steps.commit.outputs.changed == 'true'
+        run: npm run build
+
+      - name: Deploy Worker
+        if: steps.commit.outputs.changed == 'true' && env.HAS_CF_TOKEN == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          packageManager: npm
+    env:
+      HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
