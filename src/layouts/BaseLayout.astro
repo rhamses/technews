@@ -121,6 +121,13 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             <template x-if="!$store.auth.userId">
               <div class="user-menu-section">
                 <p class="user-menu-copy">Save reading history with a passkey.</p>
+                <a
+                  class="user-menu-action"
+                  href="/reading-list/"
+                  @click="$store.auth.open = false"
+                >
+                  My reading list
+                </a>
                 <button type="button" class="user-menu-action" @click="$store.auth.login()">
                   Sign in with passkey
                 </button>
@@ -132,6 +139,13 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             <template x-if="$store.auth.userId">
               <div class="user-menu-section">
                 <p class="user-menu-copy">Signed in · history synced</p>
+                <a
+                  class="user-menu-action"
+                  href="/reading-list/"
+                  @click="$store.auth.open = false"
+                >
+                  My reading list
+                </a>
                 <button type="button" class="user-menu-action" @click="$store.auth.logout()">
                   Sign out
                 </button>
@@ -503,6 +517,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         startRegistration,
       } from "@simplewebauthn/browser";
       import { loadReadIds, saveReadIds } from "../lib/read-status";
+      import { loadSavedIds, saveSavedIds } from "../lib/saved-status";
 
       type LightboxStore = {
         src: string | null;
@@ -526,7 +541,9 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         login(): Promise<void>;
         logout(): Promise<void>;
         syncReads(): Promise<void>;
+        syncSaves(): Promise<void>;
         pushRead(id: string, read: boolean): void;
+        pushSave(id: string, saved: boolean): void;
       };
 
       type ReadsStore = {
@@ -536,6 +553,15 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         setRead(id: string, read: boolean): void;
         replaceAll(ids: string[]): void;
         observeEnd(articleId: string, target: Element | null | undefined): void;
+      };
+
+      type SavesStore = {
+        ids: Record<string, true>;
+        init(): void;
+        isSaved(id: string): boolean;
+        setSaved(id: string, saved: boolean): void;
+        toggle(id: string): void;
+        replaceAll(ids: string[]): void;
       };
 
       type FeedArticle = {
@@ -552,15 +578,17 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         const filtersStore: FiltersStore = {
           hideRead: true,
           init() {
-            this.hideRead = true;
-            localStorage.setItem("technews-hide-read", "1");
+            this.hideRead = localStorage.getItem("technews-hide-read") !== "0";
           },
           persist() {
-            localStorage.setItem("technews-hide-read", "1");
+            localStorage.setItem(
+              "technews-hide-read",
+              this.hideRead ? "1" : "0",
+            );
             window.dispatchEvent(new CustomEvent("technews:filters-changed"));
           },
-          setHideRead(_value: boolean) {
-            this.hideRead = true;
+          setHideRead(value: boolean) {
+            this.hideRead = Boolean(value);
             this.persist();
           },
         };
@@ -676,6 +704,45 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
           };
         });
 
+        Alpine.data("readingList", () => {
+          const feedNode = document.getElementById("technews-feed-data");
+          const articles = feedNode?.textContent
+            ? (JSON.parse(feedNode.textContent) as FeedArticle[])
+            : [];
+
+          return {
+            articles,
+            tick: 0,
+
+            init() {
+              this.$watch(
+                () => (Alpine.store("saves") as SavesStore).ids,
+                () => {
+                  this.tick += 1;
+                },
+              );
+            },
+
+            get savedArticles() {
+              void this.tick;
+              const savedMap = (Alpine.store("saves") as SavesStore).ids;
+              return this.articles.filter((article) => savedMap[article.id]);
+            },
+
+            formatDate(iso: string) {
+              const date = new Date(iso);
+              if (Number.isNaN(date.getTime())) {
+                return "";
+              }
+              return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+            },
+          };
+        });
+
         const lightboxStore: LightboxStore = {
           src: null,
           open(src) {
@@ -710,6 +777,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               if (payload.authenticated && payload.userId) {
                 this.userId = payload.userId;
                 await this.syncReads();
+                await this.syncSaves();
               }
             } catch {
               this.status = "Could not restore session.";
@@ -750,6 +818,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               this.open = false;
               this.status = "Passkey created.";
               await this.syncReads();
+              await this.syncSaves();
             } catch (error) {
               this.status =
                 error instanceof Error ? error.message : "Registration failed.";
@@ -790,6 +859,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               this.open = false;
               this.status = "Signed in.";
               await this.syncReads();
+              await this.syncSaves();
             } catch (error) {
               this.status =
                 error instanceof Error ? error.message : "Login failed.";
@@ -826,6 +896,26 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             });
           },
 
+          async syncSaves() {
+            const localIds = loadSavedIds();
+            const response = await fetch("/api/saves", {
+              credentials: "same-origin",
+            });
+            if (!response.ok) {
+              return;
+            }
+            const payload = (await response.json()) as { ids?: string[] };
+            const remoteIds = Array.isArray(payload.ids) ? payload.ids : [];
+            const merged = [...new Set([...localIds, ...remoteIds])];
+            (Alpine.store("saves") as SavesStore).replaceAll(merged);
+            await fetch("/api/saves", {
+              method: "PUT",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ids: merged }),
+            });
+          },
+
           pushRead(id, read) {
             if (!this.userId || !id) {
               return;
@@ -835,6 +925,18 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ id, read }),
+            });
+          },
+
+          pushSave(id, saved) {
+            if (!this.userId || !id) {
+              return;
+            }
+            void fetch("/api/saves", {
+              method: "PATCH",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, saved }),
             });
           },
         };
@@ -915,6 +1017,66 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         };
 
         Alpine.store("reads", readsStore);
+
+        const savesStore: SavesStore = {
+          ids: {},
+
+          init() {
+            const map: Record<string, true> = {};
+            for (const id of loadSavedIds()) {
+              map[id] = true;
+            }
+            this.ids = map;
+          },
+
+          isSaved(id) {
+            return Boolean(this.ids[id]);
+          },
+
+          replaceAll(ids) {
+            const map: Record<string, true> = {};
+            for (const id of ids) {
+              if (id) {
+                map[id] = true;
+              }
+            }
+            this.ids = map;
+            saveSavedIds(Object.keys(this.ids));
+          },
+
+          setSaved(id, saved) {
+            if (!id) {
+              return;
+            }
+
+            if (saved) {
+              if (this.ids[id]) {
+                return;
+              }
+              this.ids = { ...this.ids, [id]: true };
+            } else {
+              if (!this.ids[id]) {
+                return;
+              }
+              const next = { ...this.ids };
+              delete next[id];
+              this.ids = next;
+            }
+
+            saveSavedIds(Object.keys(this.ids));
+            (Alpine.store("auth") as AuthStore).pushSave(id, saved);
+          },
+
+          toggle(id) {
+            this.setSaved(id, !this.isSaved(id));
+          },
+        };
+
+        Alpine.store("saves", savesStore);
+
+        (Alpine.store("filters") as FiltersStore).init();
+        (Alpine.store("reads") as ReadsStore).init();
+        (Alpine.store("saves") as SavesStore).init();
       });
 
       Object.assign(window, { Alpine });
