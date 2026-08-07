@@ -15,6 +15,12 @@
 		"binding": "AI",
 		"remote": true
 	},
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "34de0ddc159a4feaa1b94a4727a09e6e"
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "DB",

@@ -19,16 +19,18 @@ export const GET: APIRoute = async () => {
     const body = article.data.contentHtml
       ? stripHtml(article.data.contentHtml)
       : article.data.summary || "";
+    // Cap body text so the prerendered index stays under Workers asset limits.
+    const searchableBody = body.slice(0, 800);
 
     return {
       id: article.id,
       title: article.data.title,
       site_name: article.data.site_name,
-      summary: article.data.summary || body.slice(0, 180),
+      summary: article.data.summary || searchableBody.slice(0, 180),
       author: article.data.author || "",
       pubDate: article.data.pubDate.toISOString(),
       url: `/article/${article.id}/`,
-      text: [article.data.title, article.data.site_name, article.data.author, body]
+      text: [article.data.title, article.data.site_name, article.data.author, searchableBody]
         .filter(Boolean)
         .join(" ")
         .toLowerCase(),
