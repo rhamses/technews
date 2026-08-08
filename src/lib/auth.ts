@@ -191,3 +191,58 @@ export async function setReadArticle(userId: string, articleId: string, read: bo
     .bind(userId, articleId)
     .run();
 }
+
+export async function listSavedArticleIds(userId: string): Promise<string[]> {
+  const result = await env.DB.prepare(
+    `SELECT article_id FROM saved_articles WHERE user_id = ? ORDER BY saved_at DESC`,
+  )
+    .bind(userId)
+    .all<{ article_id: string }>();
+
+  return (result.results ?? []).map((row) => row.article_id);
+}
+
+export async function upsertSavedArticles(userId: string, articleIds: string[]) {
+  const unique = [...new Set(articleIds.filter(Boolean))];
+  if (unique.length === 0) {
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const statements = unique.map((articleId) =>
+    env.DB.prepare(
+      `INSERT INTO saved_articles (user_id, article_id, saved_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id, article_id) DO UPDATE SET saved_at = excluded.saved_at`,
+    ).bind(userId, articleId, now),
+  );
+
+  await env.DB.batch(statements);
+}
+
+export async function setSavedArticle(
+  userId: string,
+  articleId: string,
+  saved: boolean,
+) {
+  if (!articleId) {
+    return;
+  }
+
+  if (saved) {
+    await env.DB.prepare(
+      `INSERT INTO saved_articles (user_id, article_id, saved_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id, article_id) DO UPDATE SET saved_at = excluded.saved_at`,
+    )
+      .bind(userId, articleId, new Date().toISOString())
+      .run();
+    return;
+  }
+
+  await env.DB.prepare(
+    `DELETE FROM saved_articles WHERE user_id = ? AND article_id = ?`,
+  )
+    .bind(userId, articleId)
+    .run();
+}
