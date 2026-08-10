@@ -68,8 +68,18 @@ jobs:
             exit 0
           fi
           COUNT="${ADDED:-0}"
-          curl --fail-with-body -sS -X POST \
-            -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
-            -H "Content-Type: application/json" \
-            -d "{\"added\": ${COUNT}}" \
-            "https://technews.amb1.workers.dev/api/push/notify"
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail-with-body -sS -X POST \
+              -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
+              -H "Content-Type: application/json" \
+              -d "{\"added\": ${COUNT}}" \
+              "https://technews.amb1.workers.dev/api/push/notify"; then
+              echo
+              echo "Notify succeeded on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Notify attempt ${attempt} failed; retrying..."
+            sleep 5
+          done
+          echo "Notify failed after retries."
+          exit 1
