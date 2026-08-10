@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "astro dev",
     "ingest": "tsx scripts/ingest-feeds.ts",
+    "content:pull": "tsx scripts/content-r2.ts pull",
+    "content:push": "tsx scripts/content-r2.ts push",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -17,6 +19,7 @@
     "@astrojs/cloudflare": "^14.2.0",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
+    "@aws-sdk/client-s3": "^3.1107.0",
     "@extractus/article-extractor": "^9.0.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.2",

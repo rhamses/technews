@@ -23,3 +23,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Article corpus + ingest checkpoints live in R2 (technews-content)
+src/content/articles/**
+!src/content/articles/.gitkeep
+data/checkpoints.json
