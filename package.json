@@ -20,6 +20,7 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@aws-sdk/client-s3": "^3.1107.0",
+    "@block65/webcrypto-web-push": "^1.0.2",
     "@extractus/article-extractor": "^9.0.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.2",
@@ -33,10 +34,12 @@
     "rss-parser": "^3.13.0",
     "shiki": "^4.4.2",
     "tsx": "^4.23.9",
+    "web-push": "^3.6.7",
     "wrangler": "^4.119.0"
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.121",
-    "@types/alpinejs": "^3.13.11"
+    "@types/alpinejs": "^3.13.11",
+    "@types/web-push": "^3.6.4"
   }
 }

@@ -32,6 +32,7 @@ export default defineConfig({
           "a-arrow-up",
           "search",
           "bookmark",
+          "bell",
         ],
       },
     }),
