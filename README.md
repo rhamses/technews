@@ -2,6 +2,8 @@
 
 A minimalist RSS reader built with Astro and deployed on Cloudflare Workers. Feed sources live as markdown frontmatter files; each build (and a scheduled GitHub Action) ingests new items into an Astro content collection.
 
+## https://technews.amb1.workers.dev/
+
 ## Features
 
 - Source files in `sources/` with required `site_name` and `site_feed`
