@@ -12,6 +12,8 @@ export default defineConfig({
   site: "https://technews.pages.dev",
   adapter: cloudflare({
     imageService: "compile",
+    // Avoid remote-binding auth during `astro build` (CI has no interactive wrangler login).
+    prerenderEnvironment: "node",
   }),
   integrations: [
     sitemap(),
