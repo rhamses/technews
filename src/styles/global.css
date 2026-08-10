@@ -350,6 +350,15 @@ select {
   .site-shell {
     padding-top: calc(var(--header-height) + 2.75rem + var(--space-3));
   }
+
+  .user-menu-panel {
+    position: fixed;
+    top: calc(var(--header-height) + 0.45rem);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(16.5rem, calc(100vw - 1.5rem));
+  }
 }
 
 .icon-btn {
