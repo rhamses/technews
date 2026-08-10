@@ -26,7 +26,14 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#0B1218" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Technews" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title="Technews" href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -98,6 +105,19 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
       </div>
 
       <div class="header-actions">
+        <button
+          type="button"
+          class="icon-btn"
+          x-data
+          :data-active="$store.push.enabled.toString() === 'true'"
+          :aria-pressed="$store.push.enabled.toString()"
+          :aria-label="$store.push.enabled ? 'Disable notifications' : 'Enable notifications'"
+          :title="$store.push.status || ($store.push.enabled ? 'Notifications on' : 'Enable notifications')"
+          :disabled="$store.push.busy || !$store.push.supported"
+          @click="$store.push.toggle()"
+        >
+          <Icon name="lucide:bell" />
+        </button>
         <div class="user-menu" data-user-menu x-data>
           <button
             type="button"
@@ -564,6 +584,17 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         replaceAll(ids: string[]): void;
       };
 
+      type PushStore = {
+        supported: boolean;
+        enabled: boolean;
+        busy: boolean;
+        status: string;
+        init(): Promise<void>;
+        toggle(): Promise<void>;
+        enable(): Promise<void>;
+        disable(): Promise<void>;
+      };
+
       type FeedArticle = {
         id: string;
         title: string;
@@ -573,6 +604,17 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         pubDate: string;
         url: string;
       };
+
+      function urlBase64ToUint8Array(base64String: string) {
+        const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+        const raw = atob(base64);
+        const output = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i += 1) {
+          output[i] = raw.charCodeAt(i);
+        }
+        return output;
+      }
 
       document.addEventListener("alpine:init", () => {
         const filtersStore: FiltersStore = {
@@ -1074,9 +1116,125 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
 
         Alpine.store("saves", savesStore);
 
+        const pushStore: PushStore = {
+          supported:
+            typeof window !== "undefined" &&
+            "serviceWorker" in navigator &&
+            "PushManager" in window &&
+            "Notification" in window,
+          enabled: false,
+          busy: false,
+          status: "",
+          async init() {
+            if (!this.supported) {
+              this.status = "Notifications unavailable in this browser";
+              return;
+            }
+
+            try {
+              const registration = await navigator.serviceWorker.register("/sw.js", {
+                scope: "/",
+              });
+              const subscription = await registration.pushManager.getSubscription();
+              this.enabled = Boolean(subscription);
+            } catch {
+              this.supported = false;
+              this.status = "Could not register service worker";
+            }
+          },
+          async toggle() {
+            if (this.enabled) {
+              await this.disable();
+            } else {
+              await this.enable();
+            }
+          },
+          async enable() {
+            if (!this.supported || this.busy) {
+              return;
+            }
+            this.busy = true;
+            this.status = "";
+            try {
+              const permission = await Notification.requestPermission();
+              if (permission !== "granted") {
+                this.status = "Notification permission denied";
+                return;
+              }
+
+              const keyResponse = await fetch("/api/push/vapid-public-key");
+              if (!keyResponse.ok) {
+                throw new Error("Could not load push key");
+              }
+              const { publicKey } = (await keyResponse.json()) as { publicKey?: string };
+              if (!publicKey) {
+                throw new Error("Missing VAPID public key");
+              }
+
+              const registration = await navigator.serviceWorker.ready;
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey),
+              });
+
+              const json = subscription.toJSON();
+              const response = await fetch("/api/push/subscribe", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  endpoint: json.endpoint,
+                  keys: json.keys,
+                }),
+              });
+              if (!response.ok) {
+                throw new Error("Could not save subscription");
+              }
+
+              this.enabled = true;
+              this.status = "Notifications enabled";
+            } catch (error) {
+              this.status =
+                error instanceof Error ? error.message : "Failed to enable notifications";
+            } finally {
+              this.busy = false;
+            }
+          },
+          async disable() {
+            if (!this.supported || this.busy) {
+              return;
+            }
+            this.busy = true;
+            this.status = "";
+            try {
+              const registration = await navigator.serviceWorker.ready;
+              const subscription = await registration.pushManager.getSubscription();
+              if (subscription) {
+                await fetch("/api/push/unsubscribe", {
+                  method: "POST",
+                  credentials: "same-origin",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ endpoint: subscription.endpoint }),
+                });
+                await subscription.unsubscribe();
+              }
+              this.enabled = false;
+              this.status = "Notifications disabled";
+            } catch (error) {
+              this.status =
+                error instanceof Error ? error.message : "Failed to disable notifications";
+            } finally {
+              this.busy = false;
+            }
+          },
+        };
+
+        Alpine.store("push", pushStore);
+
         (Alpine.store("filters") as FiltersStore).init();
         (Alpine.store("reads") as ReadsStore).init();
         (Alpine.store("saves") as SavesStore).init();
+        void (Alpine.store("push") as PushStore).init();
       });
 
       Object.assign(window, { Alpine });

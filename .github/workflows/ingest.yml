@@ -34,6 +34,7 @@ jobs:
         run: npm run content:pull
 
       - name: Ingest feeds
+        id: ingest
         run: npm run ingest
 
       - name: Push content to R2
@@ -56,3 +57,19 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
           packageManager: npm
+
+      - name: Notify push subscribers
+        env:
+          PUSH_NOTIFY_SECRET: ${{ secrets.PUSH_NOTIFY_SECRET }}
+          ADDED: ${{ steps.ingest.outputs.added }}
+        run: |
+          if [ -z "$PUSH_NOTIFY_SECRET" ]; then
+            echo "PUSH_NOTIFY_SECRET not set; skipping notify."
+            exit 0
+          fi
+          COUNT="${ADDED:-0}"
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "{\"added\": ${COUNT}}" \
+            "https://technews.amb1.workers.dev/api/push/notify"

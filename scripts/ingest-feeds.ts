@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import {
+  appendFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -460,6 +461,10 @@ async function main() {
   console.log(
     `Ingest complete. Added ${totalAdded} article(s), fetched ${totalFetched} original page(s) from ${sources.length} source(s).`,
   );
+
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `added=${totalAdded}\n`);
+  }
 }
 
 main().catch((error) => {

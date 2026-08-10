@@ -47,6 +47,8 @@ site_feed: "https://example.com/feed.xml"
 
 Production: **https://technews.amb1.workers.dev/**
 
-1. Ensure GitHub secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, and `R2_SECRET_ACCESS_KEY` are set.
-2. Keep Worker bindings in `wrangler.jsonc` (`AI`, `DB`, `SESSION`, `CONTENT`).
-3. Keep `.github/workflows/ingest.yml` enabled — hourly it pulls from R2, ingests feeds, pushes back to R2, builds, and deploys.
+1. Ensure GitHub secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `PUSH_NOTIFY_SECRET` are set.
+2. Keep Worker secrets `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, and `PUSH_NOTIFY_SECRET`.
+3. Keep Worker bindings in `wrangler.jsonc` (`AI`, `DB`, `SESSION`, `CONTENT`).
+4. Keep `.github/workflows/ingest.yml` enabled — hourly it pulls from R2, ingests feeds, pushes back to R2, builds, deploys, and notifies push subscribers with the new-article count.
+5. Visitors can enable push via the bell icon in the header (PWA install + splash use `/manifest.webmanifest` and `/icons`).
