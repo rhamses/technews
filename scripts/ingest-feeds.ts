@@ -57,7 +57,7 @@ const parser = new Parser({
 const articleFetcher = (url: string) =>
   fetch(url, {
     headers: {
-      "User-Agent": "TechnewsRSSReader/1.0 (+https://technews.pages.dev)",
+      "User-Agent": "TechnewsRSSReader/1.0 (+https://technews.amb1.workers.dev)",
       Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
     },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -287,7 +287,7 @@ async function ingestFeed(
 ): Promise<{ added: number; skipped: boolean; fetched: number }> {
   const checkpoint = checkpoints[source.site_feed] ?? {};
   const headers: Record<string, string> = {
-    "User-Agent": "TechnewsRSSReader/1.0 (+https://technews.pages.dev)",
+    "User-Agent": "TechnewsRSSReader/1.0 (+https://technews.amb1.workers.dev)",
     Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml",
   };
 

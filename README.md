@@ -2,8 +2,6 @@
 
 A minimalist RSS reader built with Astro and deployed on Cloudflare Workers. Feed sources live as markdown frontmatter files; each build (and a scheduled GitHub Action) ingests new items into an Astro content collection.
 
-## https://technews.amb1.workers.dev/
-
 ## Features
 
 - Source files in `sources/` with required `site_name` and `site_feed`
@@ -41,6 +39,8 @@ site_feed: "https://example.com/feed.xml"
 
 ## Deploy
 
-1. Connect this repository to Cloudflare Workers Builds (`npm run build`).
-2. Ensure the Worker has an `AI` binding (already declared in `wrangler.jsonc`).
-3. Keep the GitHub Action `.github/workflows/ingest.yml` enabled so ingested articles and checkpoints are committed back to the repo every 6 hours.
+Production: **https://technews.amb1.workers.dev/**
+
+1. Ensure GitHub secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are set.
+2. Keep the Worker `AI`, `DB`, and `SESSION` bindings declared in `wrangler.jsonc`.
+3. Keep `.github/workflows/ingest.yml` enabled — it ingests feeds hourly, commits new articles, builds, and deploys the Worker.
