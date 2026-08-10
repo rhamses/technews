@@ -9,7 +9,7 @@ const debugShim = fileURLToPath(new URL("./src/shims/debug.js", import.meta.url)
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://technews.pages.dev",
+  site: "https://technews.amb1.workers.dev",
   adapter: cloudflare({
     imageService: "compile",
     // Avoid remote-binding auth during `astro build` (CI has no interactive wrangler login).

@@ -28,5 +28,11 @@
 			"database_id": "eb60ba73-4d2c-4ea7-b7ac-7257ef2adad9",
 			"migrations_dir": "migrations"
 		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "CONTENT",
+			"bucket_name": "technews-content"
+		}
 	]
 }
