@@ -833,8 +833,73 @@ select {
   line-height: 1.7;
 }
 
-.article-body :where(p, ul, ol, blockquote, pre, figure) {
+.article-body :where(p, ul, ol, blockquote, pre, figure, .table-scroll) {
   margin-block: 1.1em;
+}
+
+.article-body .table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--bg-elevated) 92%, transparent);
+}
+
+.article-body table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  line-height: 1.45;
+}
+
+.article-body thead {
+  background: color-mix(in oklab, var(--accent-soft) 55%, var(--bg-elevated));
+}
+
+.article-body table:not(:has(thead)) tbody tr:first-child td {
+  background: color-mix(in oklab, var(--accent-soft) 55%, var(--bg-elevated));
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.article-body th,
+.article-body td {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.article-body th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.article-body tbody tr:nth-child(even) {
+  background: color-mix(in oklab, var(--accent-soft) 28%, transparent);
+}
+
+.article-body tbody tr:hover {
+  background: color-mix(in oklab, var(--accent-soft) 48%, transparent);
+}
+
+.article-body caption {
+  caption-side: bottom;
+  padding: 0.65rem 0.85rem;
+  color: var(--muted);
+  font-size: 0.85em;
+  text-align: left;
 }
 
 .article-body :not(pre) > code {
@@ -1080,6 +1145,132 @@ html.lightbox-open body {
 .empty {
   color: var(--muted);
   padding-block: var(--space-5);
+}
+
+.paste-url-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.paste-url-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: color-mix(in oklab, var(--ink) 42%, transparent);
+  cursor: pointer;
+}
+
+.paste-url-panel {
+  position: relative;
+  z-index: 1;
+  width: min(28rem, calc(100vw - 2rem));
+  padding: 1.25rem 1.3rem 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: color-mix(in oklab, var(--bg-elevated) 96%, transparent);
+  box-shadow: 0 18px 40px color-mix(in oklab, var(--ink) 18%, transparent);
+}
+
+.paste-url-panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.paste-url-copy {
+  margin: 0.45rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.paste-url-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.paste-url-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.paste-url-input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--bg) 70%, var(--bg-elevated));
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.98rem;
+}
+
+.paste-url-input:focus {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline-offset: 1px;
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--line));
+}
+
+.paste-url-status {
+  margin: 0;
+  min-height: 1.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.paste-url-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.paste-url-cancel,
+.paste-url-submit {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.paste-url-cancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.paste-url-cancel:hover {
+  background: color-mix(in oklab, var(--bg) 55%, transparent);
+}
+
+.paste-url-submit {
+  border: 1px solid color-mix(in oklab, var(--accent) 45%, var(--line));
+  background: color-mix(in oklab, var(--accent-soft) 80%, var(--bg-elevated));
+  color: var(--ink);
+}
+
+.paste-url-submit:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--accent-soft) 100%, var(--bg-elevated));
+}
+
+.paste-url-submit:disabled,
+.paste-url-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+html.paste-url-open,
+html.paste-url-open body {
+  overflow: hidden;
 }
 
 @keyframes rise {

@@ -157,6 +157,61 @@ function resolveImageSrc(img: Element): string | null {
   return candidates.at(-1) ?? null;
 }
 
+function wrapTables(root: Element, document: Document) {
+  for (const table of [...root.querySelectorAll("table")]) {
+    if (table.closest(".table-scroll")) {
+      continue;
+    }
+
+    // Promote bold-only first rows (common in extracted CMS HTML) into a real header.
+    if (!table.querySelector("thead")) {
+      const firstRow = table.querySelector("tr");
+      const cells = firstRow ? [...firstRow.querySelectorAll(":scope > td, :scope > th")] : [];
+      const looksLikeHeader =
+        cells.length > 0 &&
+        cells.every((cell) => {
+          const text = cell.textContent?.trim() ?? "";
+          if (!text) {
+            return false;
+          }
+          const strong = cell.querySelector("strong, b");
+          return Boolean(strong) || cell.tagName === "TH";
+        });
+
+      if (looksLikeHeader && firstRow) {
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        for (const cell of cells) {
+          const th = document.createElement("th");
+          th.innerHTML = cell.innerHTML;
+          for (const attr of cell.attributes) {
+            th.setAttribute(attr.name, attr.value);
+          }
+          headerRow.append(th);
+        }
+        thead.append(headerRow);
+        firstRow.remove();
+        table.prepend(thead);
+        if (!table.querySelector("tbody")) {
+          const bodyRows = [...table.querySelectorAll(":scope > tr")];
+          if (bodyRows.length) {
+            const tbody = document.createElement("tbody");
+            for (const row of bodyRows) {
+              tbody.append(row);
+            }
+            table.append(tbody);
+          }
+        }
+      }
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "table-scroll";
+    table.replaceWith(wrapper);
+    wrapper.append(table);
+  }
+}
+
 function wrapImages(root: Element, document: Document) {
   for (const img of [...root.querySelectorAll("img")]) {
     if (img.closest("button.article-lightbox-trigger")) {
@@ -227,6 +282,7 @@ export async function enhanceArticleHtml(html: string): Promise<string> {
   }
 
   await highlightCodeBlocks(root, document);
+  wrapTables(root, document);
   wrapImages(root, document);
 
   return root.innerHTML;
