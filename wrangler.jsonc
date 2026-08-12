@@ -15,10 +15,6 @@
 		{
 			"pattern": "technews.rhams.es",
 			"custom_domain": true
-		},
-		{
-			"pattern": "rhams.es/technews*",
-			"zone_name": "rhams.es"
 		}
 	],
 	"observability": {
