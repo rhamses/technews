@@ -42,6 +42,21 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function getCloudflareApiToken(): string | null {
+  return (
+    process.env.CLOUDFLARE_API_TOKEN ||
+    process.env.CF_API_TOKEN ||
+    process.env.WRANGLER_API_TOKEN ||
+    null
+  );
+}
+
+function canUseS3(): boolean {
+  return Boolean(
+    process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY,
+  );
+}
+
 function createClient(): S3Client {
   return new S3Client({
     region: "auto",
@@ -51,6 +66,151 @@ function createClient(): S3Client {
       secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY"),
     },
   });
+}
+
+async function cfApi<T = unknown>(
+  path: string,
+  init: RequestInit = {},
+): Promise<{ status: number; json?: T; bytes?: Uint8Array; headers: Headers }> {
+  const token = getCloudflareApiToken();
+  if (!token) {
+    throw new Error(
+      "Missing CLOUDFLARE_API_TOKEN (or R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY)",
+    );
+  }
+
+  const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(init.headers || {}),
+    },
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return {
+      status: response.status,
+      json: (await response.json()) as T,
+      headers: response.headers,
+    };
+  }
+
+  return {
+    status: response.status,
+    bytes: new Uint8Array(await response.arrayBuffer()),
+    headers: response.headers,
+  };
+}
+
+async function listRemoteViaApi(prefix: string): Promise<Map<string, RemoteObject>> {
+  const objects = new Map<string, RemoteObject>();
+  let cursor: string | undefined;
+
+  do {
+    const query = new URLSearchParams({
+      per_page: "1000",
+      prefix,
+    });
+    if (cursor) {
+      query.set("cursor", cursor);
+    }
+
+    const { status, json } = await cfApi<{
+      success: boolean;
+      result?: Array<{ key: string; size?: number; etag?: string }>;
+      result_info?: { cursor?: string; is_truncated?: boolean };
+      errors?: Array<{ message: string }>;
+    }>(
+      `/accounts/${ACCOUNT_ID}/r2/buckets/${encodeURIComponent(BUCKET)}/objects?${query}`,
+    );
+
+    if (status >= 400 || !json?.success) {
+      const message =
+        json?.errors?.map((error) => error.message).join("; ") ||
+        `R2 list failed (${status})`;
+      throw new Error(message);
+    }
+
+    for (const item of json.result || []) {
+      if (!item.key || item.key.endsWith("/")) {
+        continue;
+      }
+      objects.set(item.key, {
+        key: item.key,
+        size: item.size,
+        etag: item.etag,
+      });
+    }
+
+    cursor = json.result_info?.is_truncated
+      ? json.result_info.cursor
+      : undefined;
+  } while (cursor);
+
+  return objects;
+}
+
+async function getObjectViaApi(key: string): Promise<Uint8Array> {
+  const encodedKey = key
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const { status, bytes, json } = await cfApi(
+    `/accounts/${ACCOUNT_ID}/r2/buckets/${encodeURIComponent(BUCKET)}/objects/${encodedKey}`,
+  );
+
+  if (status >= 400 || !bytes) {
+    const message =
+      (json as { errors?: Array<{ message: string }> } | undefined)?.errors
+        ?.map((error) => error.message)
+        .join("; ") || `R2 get failed for ${key} (${status})`;
+    throw new Error(message);
+  }
+
+  return bytes;
+}
+
+async function pullArticlesViaApi(): Promise<number> {
+  mkdirSync(ARTICLES_DIR, { recursive: true });
+  const remote = await listRemoteViaApi("articles/");
+  let downloaded = 0;
+
+  await mapPool([...remote.values()], CONCURRENCY, async (obj) => {
+    const name = obj.key.slice("articles/".length);
+    if (!name || name.includes("..") || !name.endsWith(".md")) {
+      return;
+    }
+    const localPath = join(ARTICLES_DIR, name);
+    if (
+      existsSync(localPath) &&
+      statSync(localPath).size === obj.size &&
+      etagMatches(localPath, obj.etag)
+    ) {
+      return;
+    }
+
+    const body = await getObjectViaApi(obj.key);
+    mkdirSync(dirname(localPath), { recursive: true });
+    writeFileSync(localPath, body);
+    downloaded += 1;
+    if (downloaded % 100 === 0) {
+      console.log(`[pull] downloaded ${downloaded} article(s)...`);
+    }
+  });
+
+  return downloaded;
+}
+
+async function pullCheckpointsViaApi(): Promise<boolean> {
+  try {
+    const body = await getObjectViaApi("checkpoints.json");
+    mkdirSync(dirname(CHECKPOINTS_PATH), { recursive: true });
+    writeFileSync(CHECKPOINTS_PATH, body);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function etagMatches(localPath: string, etag?: string): boolean {
@@ -257,6 +417,18 @@ async function main() {
   if (command !== "push" && command !== "pull") {
     console.error("Usage: tsx scripts/content-r2.ts <pull|push>");
     process.exit(1);
+  }
+
+  if (command === "pull" && !canUseS3()) {
+    console.log(
+      "[pull] R2 S3 keys not set; using Cloudflare API token fallback.",
+    );
+    const checkpoints = await pullCheckpointsViaApi();
+    const downloaded = await pullArticlesViaApi();
+    console.log(
+      `Pull complete. Articles downloaded: ${downloaded}. Checkpoints: ${checkpoints ? "yes" : "missing"}.`,
+    );
+    return;
   }
 
   const client = createClient();
