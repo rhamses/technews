@@ -156,27 +156,43 @@ async function getObjectViaApi(key: string): Promise<Uint8Array> {
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/");
-  const { status, bytes, json } = await cfApi(
-    `/accounts/${ACCOUNT_ID}/r2/buckets/${encodeURIComponent(BUCKET)}/objects/${encodedKey}`,
-  );
 
-  if (status >= 400 || !bytes) {
-    const message =
-      (json as { errors?: Array<{ message: string }> } | undefined)?.errors
-        ?.map((error) => error.message)
-        .join("; ") || `R2 get failed for ${key} (${status})`;
-    throw new Error(message);
+  let attempt = 0;
+  while (true) {
+    attempt += 1;
+    const { status, bytes, json, headers } = await cfApi(
+      `/accounts/${ACCOUNT_ID}/r2/buckets/${encodeURIComponent(BUCKET)}/objects/${encodedKey}`,
+    );
+
+    if (status === 429 || status === 503) {
+      if (attempt >= 8) {
+        throw new Error(`R2 get failed for ${key} (${status}) after retries`);
+      }
+      const retryAfter = Number(headers.get("retry-after") || 0);
+      const delayMs = Math.max(retryAfter * 1000, 250 * 2 ** (attempt - 1));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      continue;
+    }
+
+    if (status >= 400 || !bytes) {
+      const message =
+        (json as { errors?: Array<{ message: string }> } | undefined)?.errors
+          ?.map((error) => error.message)
+          .join("; ") || `R2 get failed for ${key} (${status})`;
+      throw new Error(message);
+    }
+
+    return bytes;
   }
-
-  return bytes;
 }
 
 async function pullArticlesViaApi(): Promise<number> {
   mkdirSync(ARTICLES_DIR, { recursive: true });
   const remote = await listRemoteViaApi("articles/");
   let downloaded = 0;
+  const concurrency = Math.min(CONCURRENCY, 4);
 
-  await mapPool([...remote.values()], CONCURRENCY, async (obj) => {
+  await mapPool([...remote.values()], concurrency, async (obj) => {
     const name = obj.key.slice("articles/".length);
     if (!name || name.includes("..") || !name.endsWith(".md")) {
       return;
