@@ -8,6 +8,18 @@
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+	"workers_dev": true,
+	"preview_urls": true,
+	"routes": [
+		{
+			"pattern": "technews.rhams.es",
+			"custom_domain": true
+		},
+		{
+			"pattern": "rhams.es/technews*",
+			"zone_name": "rhams.es"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},

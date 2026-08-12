@@ -45,7 +45,7 @@ site_feed: "https://example.com/feed.xml"
 
 ## Deploy
 
-Production: **https://technews.amb1.workers.dev/**
+Production: **https://technews.rhams.es/** (also `rhams.es/technews*` and `technews.amb1.workers.dev`)
 
 1. Ensure GitHub secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `PUSH_NOTIFY_SECRET` are set.
 2. Keep Worker secrets `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, and `PUSH_NOTIFY_SECRET`.

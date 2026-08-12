@@ -73,7 +73,7 @@ jobs:
               -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
               -H "Content-Type: application/json" \
               -d "{\"added\": ${COUNT}}" \
-              "https://technews.amb1.workers.dev/api/push/notify"; then
+              "https://technews.rhams.es/api/push/notify"; then
               echo
               echo "Notify succeeded on attempt ${attempt}."
               exit 0
@@ -81,5 +81,15 @@ jobs:
             echo "Notify attempt ${attempt} failed; retrying..."
             sleep 5
           done
+          # Fallback to workers.dev during DNS/custom-domain propagation
+          if curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "{\"added\": ${COUNT}}" \
+            "https://technews.amb1.workers.dev/api/push/notify"; then
+            echo
+            echo "Notify succeeded via workers.dev fallback."
+            exit 0
+          fi
           echo "Notify failed after retries."
           exit 1
