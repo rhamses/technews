@@ -1,0 +1,103 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  articleId: string;
+  title: string;
+  siteName: string;
+  author?: string | null;
+  pubDate: Date;
+  backHref?: string;
+  backLabel?: string;
+  showFavorite?: boolean;
+}
+
+const {
+  articleId,
+  title,
+  siteName,
+  author,
+  pubDate,
+  backHref = "/",
+  backLabel = "All articles",
+  showFavorite = true,
+} = Astro.props;
+
+const articleIdJson = JSON.stringify(articleId);
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+const languages = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "pt", label: "Portuguese" },
+  { code: "it", label: "Italian" },
+  { code: "nl", label: "Dutch" },
+  { code: "ru", label: "Russian" },
+  { code: "ja", label: "Japanese" },
+  { code: "zh", label: "Chinese" },
+  { code: "hi", label: "Hindi" },
+  { code: "ar", label: "Arabic" },
+];
+---
+
+<a class="back-link" href={backHref}>
+  <Icon name="lucide:arrow-left" />
+  {backLabel}
+</a>
+
+<h1 data-article-title>{title}</h1>
+
+<div class="meta">
+  <span>{siteName}</span>
+  {author && <span>{author}</span>}
+  <time datetime={pubDate.toISOString()}>
+    {formatDate(pubDate)}
+  </time>
+</div>
+
+<div class="article-toolbar">
+  {
+    showFavorite && (
+      <button
+        type="button"
+        class="favorite-article-btn"
+        data-favorite-btn
+        :class={`{ 'is-favorited': $store.favorites.isFavorite(${articleIdJson}) }`}
+        :aria-pressed={`$store.favorites.isFavorite(${articleIdJson}).toString()`}
+        @click={`$store.favorites.toggle(${articleIdJson})`}
+      >
+        <Icon name="lucide:bookmark" />
+        <span
+          x-text={`$store.favorites.isFavorite(${articleIdJson}) ? 'Favorited' : 'Favorite this article'`}
+          >Favorite this article</span
+        >
+      </button>
+    )
+  }
+  <label>
+    <Icon name="lucide:languages" />
+    <span>Translate</span>
+    <select data-lang-select aria-label="Target language">
+      {
+        languages.map((language) => (
+          <option value={language.code}>{language.label}</option>
+        ))
+      }
+    </select>
+  </label>
+  <button type="button" data-translate-btn>
+    <Icon name="lucide:languages" />
+    Translate
+  </button>
+  <button type="button" data-original-btn hidden>Show original</button>
+  <p class="status" data-translate-status aria-live="polite"></p>
+</div>

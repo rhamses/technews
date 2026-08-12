@@ -26,6 +26,7 @@ const feedItems = articles.map((article) => ({
   ),
   pubDate: article.data.pubDate.toISOString(),
   url: `/article/${article.id}/`,
+  kind: "feed" as const,
 }));
 
 const feedPayload = JSON.stringify(feedItems).replace(/</g, "\\u003c");
@@ -45,18 +46,94 @@ const feedPayload = JSON.stringify(feedItems).replace(/</g, "\\u003c");
     <section class="hero">
       <div class="hero-row">
         <p>Your saved articles, ready when you are.</p>
+        <div class="feed-controls">
+          <button
+            type="button"
+            class="category-trigger"
+            :disabled="pasteBusy"
+            @click="openPasteModal()"
+          >
+            Colar URL
+          </button>
+        </div>
       </div>
     </section>
 
-    <template x-if="savedArticles.length === 0">
+    <div
+      class="paste-url-modal"
+      x-show="pasteModalOpen"
+      x-cloak
+      x-transition.opacity.duration.150ms
+      @keydown.escape.window="closePasteModal()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paste-url-title"
+    >
+      <button
+        type="button"
+        class="paste-url-backdrop"
+        aria-label="Close"
+        @click="closePasteModal()"
+      ></button>
+      <div class="paste-url-panel" @click.stop>
+        <h2 id="paste-url-title">Add article URL</h2>
+        <p class="paste-url-copy">
+          Paste a link to fetch and save it to your reading list.
+        </p>
+        <form class="paste-url-form" @submit.prevent="submitPasteUrl()">
+          <label class="paste-url-label" for="paste-url-input">Article URL</label>
+          <input
+            id="paste-url-input"
+            class="paste-url-input"
+            type="url"
+            name="url"
+            inputmode="url"
+            autocomplete="url"
+            placeholder="https://…"
+            x-model="pasteUrlValue"
+            x-ref="pasteInput"
+            :disabled="pasteBusy"
+            required
+          />
+          <p
+            class="paste-url-status"
+            x-show="pasteStatus"
+            x-text="pasteStatus"
+            aria-live="polite"
+          ></p>
+          <div class="paste-url-actions">
+            <button
+              type="button"
+              class="paste-url-cancel"
+              :disabled="pasteBusy"
+              @click="closePasteModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="paste-url-submit"
+              :disabled="pasteBusy || !pasteUrlValue.trim()"
+            >
+              <span x-text="pasteBusy ? 'Processing…' : 'Add to list'"
+                >Add to list</span
+              >
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <template x-if="listedArticles.length === 0">
       <p class="empty">
-        Nothing saved yet. Tap the bookmark on any article card to add it here.
+        Nothing saved yet. Tap the bookmark on any article card, or paste a URL
+        to read later.
       </p>
     </template>
 
-    <template x-if="savedArticles.length > 0">
+    <template x-if="listedArticles.length > 0">
       <ol class="article-list">
-        <template x-for="article in savedArticles" :key="article.id">
+        <template x-for="article in listedArticles" :key="article.id">
           <li
             class="article-card"
             :class="{
@@ -70,7 +147,7 @@ const feedPayload = JSON.stringify(feedItems).replace(/</g, "\\u003c");
               title="Remove from reading list"
               aria-label="Remove from reading list"
               aria-pressed="true"
-              @click.stop="$store.saves.toggle(article.id)"
+              @click.stop="removeArticle(article)"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path

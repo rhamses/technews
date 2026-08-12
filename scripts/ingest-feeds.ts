@@ -11,6 +11,10 @@ import { join } from "node:path";
 import { extract } from "@extractus/article-extractor";
 import matter from "gray-matter";
 import Parser from "rss-parser";
+import {
+  htmlToPlain,
+  sanitizeHtml,
+} from "../src/lib/extract-article";
 
 const ROOT = process.cwd();
 const SOURCES_DIR = join(ROOT, "sources");
@@ -91,26 +95,8 @@ function slugifyId(value: string): string {
   return `${base || "article"}-${hash}`;
 }
 
-function sanitizeHtml(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
-    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, "")
-    .replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "")
-    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "")
-    .replace(/javascript:/gi, "")
-    .trim();
-}
-
 function yamlEscape(value: string): string {
   return JSON.stringify(value);
-}
-
-function htmlToPlain(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function preferLongerHtml(a?: string, b?: string): string | undefined {

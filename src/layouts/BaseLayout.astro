@@ -553,6 +553,13 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
       import { loadReadIds, saveReadIds } from "../lib/read-status";
       import { loadSavedIds, saveSavedIds } from "../lib/saved-status";
       import { loadFavoriteIds, saveFavoriteIds } from "../lib/favorites-status";
+      import {
+        loadReadLaterItems,
+        removeReadLaterItem,
+        saveReadLaterItems,
+        upsertReadLaterItem,
+      } from "../lib/read-later-status";
+      import type { ReadLaterCard } from "../lib/extract-article";
 
       type LightboxStore = {
         src: string | null;
@@ -577,8 +584,10 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         logout(): Promise<void>;
         syncReads(): Promise<void>;
         syncSaves(): Promise<void>;
+        syncReadLater(): Promise<void>;
         pushRead(id: string, read: boolean): void;
         pushSave(id: string, saved: boolean): void;
+        pushReadLaterDelete(id: string): void;
       };
 
       type ReadsStore = {
@@ -608,6 +617,14 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         replaceAll(ids: string[]): void;
       };
 
+      type ReadLaterStore = {
+        items: ReadLaterCard[];
+        init(): void;
+        replaceAll(items: ReadLaterCard[]): void;
+        upsert(item: ReadLaterCard): void;
+        remove(id: string): void;
+      };
+
       type PushStore = {
         supported: boolean;
         enabled: boolean;
@@ -627,6 +644,10 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         readingTime: string;
         pubDate: string;
         url: string;
+        kind?: "feed" | "read-later";
+        source_url?: string;
+        author?: string;
+        summary?: string;
       };
 
       function urlBase64ToUint8Array(base64String: string) {
@@ -779,6 +800,10 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
           return {
             articles,
             tick: 0,
+            pasteBusy: false,
+            pasteStatus: "",
+            pasteModalOpen: false,
+            pasteUrlValue: "",
 
             init() {
               this.$watch(
@@ -787,27 +812,128 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
                   this.tick += 1;
                 },
               );
+              this.$watch(
+                () => (Alpine.store("readLater") as ReadLaterStore).items,
+                () => {
+                  this.tick += 1;
+                },
+              );
             },
 
-          get savedArticles() {
-            void this.tick;
-            const savedMap = (Alpine.store("saves") as SavesStore).ids;
-            return this.articles.filter((article) => savedMap[article.id]);
-          },
+            get listedArticles() {
+              void this.tick;
+              const savedMap = (Alpine.store("saves") as SavesStore).ids;
+              const feedSaved = this.articles
+                .filter((article) => savedMap[article.id])
+                .map((article) => ({ ...article, kind: "feed" as const }));
+              const pasted = (
+                Alpine.store("readLater") as ReadLaterStore
+              ).items.map((item) => ({
+                ...item,
+                kind: "read-later" as const,
+              }));
 
-          formatDate(iso: string) {
-            const date = new Date(iso);
-            if (Number.isNaN(date.getTime())) {
-              return "";
-            }
-            return date.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
-          },
-        };
-      });
+              return [...pasted, ...feedSaved].sort(
+                (a, b) =>
+                  new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
+              );
+            },
+
+            openPasteModal() {
+              if (this.pasteBusy) {
+                return;
+              }
+              this.pasteStatus = "";
+              this.pasteUrlValue = "";
+              this.pasteModalOpen = true;
+              document.documentElement.classList.add("paste-url-open");
+              this.$nextTick(() => {
+                const input = this.$refs.pasteInput as
+                  | HTMLInputElement
+                  | undefined;
+                input?.focus();
+              });
+            },
+
+            closePasteModal() {
+              if (this.pasteBusy) {
+                return;
+              }
+              this.pasteModalOpen = false;
+              this.pasteStatus = "";
+              this.pasteUrlValue = "";
+              document.documentElement.classList.remove("paste-url-open");
+            },
+
+            async submitPasteUrl() {
+              if (this.pasteBusy) {
+                return;
+              }
+
+              const url = this.pasteUrlValue.trim();
+              if (!url) {
+                this.pasteStatus = "Enter an article URL.";
+                return;
+              }
+
+              this.pasteBusy = true;
+              this.pasteStatus = "Fetching article…";
+              try {
+                const response = await fetch("/api/read-later", {
+                  method: "POST",
+                  credentials: "same-origin",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ url }),
+                });
+                const payload = (await response.json()) as {
+                  item?: ReadLaterCard;
+                  error?: string;
+                };
+                if (!response.ok || !payload.item) {
+                  throw new Error(payload.error || "Failed to save URL");
+                }
+
+                (Alpine.store("readLater") as ReadLaterStore).upsert(
+                  payload.item,
+                );
+                this.pasteStatus = "Saved to reading list.";
+                this.pasteModalOpen = false;
+                this.pasteUrlValue = "";
+                document.documentElement.classList.remove("paste-url-open");
+              } catch (error) {
+                this.pasteStatus =
+                  error instanceof Error
+                    ? error.message
+                    : "Failed to process URL.";
+              } finally {
+                this.pasteBusy = false;
+              }
+            },
+
+            removeArticle(article: FeedArticle) {
+              if (article.kind === "read-later") {
+                (Alpine.store("readLater") as ReadLaterStore).remove(article.id);
+                (Alpine.store("auth") as AuthStore).pushReadLaterDelete(
+                  article.id,
+                );
+                return;
+              }
+              (Alpine.store("saves") as SavesStore).toggle(article.id);
+            },
+
+            formatDate(iso: string) {
+              const date = new Date(iso);
+              if (Number.isNaN(date.getTime())) {
+                return "";
+              }
+              return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+            },
+          };
+        });
 
       Alpine.data("favoritesList", () => {
         const feedNode = document.getElementById("technews-feed-data");
@@ -826,12 +952,38 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
                 this.tick += 1;
               },
             );
+            this.$watch(
+              () => (Alpine.store("readLater") as ReadLaterStore).items,
+              () => {
+                this.tick += 1;
+              },
+            );
           },
 
           get favoriteArticles() {
             void this.tick;
             const favoriteMap = (Alpine.store("favorites") as FavoritesStore).ids;
-            return this.articles.filter((article) => favoriteMap[article.id]);
+            const feedFavorites = this.articles.filter(
+              (article) => favoriteMap[article.id],
+            );
+            const readLaterFavorites = (
+              Alpine.store("readLater") as ReadLaterStore
+            ).items
+              .filter((item) => favoriteMap[item.id])
+              .map((item) => ({
+                ...item,
+                kind: "read-later" as const,
+              }));
+
+            const byId = new Map<string, FeedArticle>();
+            for (const article of [...feedFavorites, ...readLaterFavorites]) {
+              byId.set(article.id, article);
+            }
+
+            return [...byId.values()].sort(
+              (a, b) =>
+                new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
+            );
           },
 
           formatDate(iso: string) {
@@ -883,6 +1035,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
                 this.userId = payload.userId;
                 await this.syncReads();
                 await this.syncSaves();
+                await this.syncReadLater();
               }
             } catch {
               this.status = "Could not restore session.";
@@ -924,6 +1077,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               this.status = "Passkey created.";
               await this.syncReads();
               await this.syncSaves();
+              await this.syncReadLater();
             } catch (error) {
               this.status =
                 error instanceof Error ? error.message : "Registration failed.";
@@ -965,6 +1119,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               this.status = "Signed in.";
               await this.syncReads();
               await this.syncSaves();
+              await this.syncReadLater();
             } catch (error) {
               this.status =
                 error instanceof Error ? error.message : "Login failed.";
@@ -1021,6 +1176,36 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             });
           },
 
+          async syncReadLater() {
+            const localItems = loadReadLaterItems();
+            const response = await fetch("/api/read-later", {
+              credentials: "same-origin",
+            });
+            if (!response.ok) {
+              return;
+            }
+            const payload = (await response.json()) as {
+              items?: ReadLaterCard[];
+            };
+            const remoteItems = Array.isArray(payload.items)
+              ? payload.items
+              : [];
+            const byId = new Map<string, ReadLaterCard>();
+            for (const item of [...remoteItems, ...localItems]) {
+              if (item?.id) {
+                byId.set(item.id, item);
+              }
+            }
+            const merged = [...byId.values()];
+            (Alpine.store("readLater") as ReadLaterStore).replaceAll(merged);
+            await fetch("/api/read-later", {
+              method: "PUT",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ items: merged }),
+            });
+          },
+
           pushRead(id, read) {
             if (!this.userId || !id) {
               return;
@@ -1042,6 +1227,18 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
               credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ id, saved }),
+            });
+          },
+
+          pushReadLaterDelete(id) {
+            if (!this.userId || !id) {
+              return;
+            }
+            void fetch("/api/read-later", {
+              method: "DELETE",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id }),
             });
           },
         };
@@ -1234,6 +1431,31 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
 
         Alpine.store("favorites", favoritesStore);
 
+        const readLaterStore: ReadLaterStore = {
+          items: [],
+
+          init() {
+            this.items = loadReadLaterItems();
+          },
+
+          replaceAll(items) {
+            this.items = items;
+            saveReadLaterItems(items);
+          },
+
+          upsert(item) {
+            upsertReadLaterItem(item);
+            this.items = loadReadLaterItems();
+          },
+
+          remove(id) {
+            removeReadLaterItem(id);
+            this.items = loadReadLaterItems();
+          },
+        };
+
+        Alpine.store("readLater", readLaterStore);
+
         const pushStore: PushStore = {
           supported:
             typeof window !== "undefined" &&
@@ -1353,6 +1575,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         (Alpine.store("reads") as ReadsStore).init();
         (Alpine.store("saves") as SavesStore).init();
         (Alpine.store("favorites") as FavoritesStore).init();
+        (Alpine.store("readLater") as ReadLaterStore).init();
         void (Alpine.store("push") as PushStore).init();
       });
 

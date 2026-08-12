@@ -19,6 +19,10 @@
 		{
 			"binding": "SESSION",
 			"id": "34de0ddc159a4feaa1b94a4727a09e6e"
+		},
+		{
+			"binding": "ARTICLE_CACHE",
+			"id": "306d24081f1d405c8fa35950c7804e74"
 		}
 	],
 	"d1_databases": [
