@@ -1,0 +1,114 @@
+---
+export const prerender = true;
+
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  estimateReadingMinutes,
+  formatReadingTime,
+} from "../lib/reading-time";
+
+const articles = (await getCollection("articles")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const feedItems = articles.map((article) => ({
+  id: article.id,
+  title: article.data.title,
+  site_name: article.data.site_name,
+  category: article.data.category,
+  readingTime: formatReadingTime(
+    estimateReadingMinutes([
+      article.data.contentHtml,
+      article.data.summary,
+      article.body,
+    ]),
+  ),
+  pubDate: article.data.pubDate.toISOString(),
+  url: `/article/${article.id}/`,
+}));
+
+const feedPayload = JSON.stringify(feedItems).replace(/</g, "\\u003c");
+---
+
+<BaseLayout
+  title="Favorites · Technews"
+  description="Articles you marked as favorites."
+>
+  <script
+    type="application/json"
+    id="technews-feed-data"
+    set:html={feedPayload}
+  ></script>
+
+  <div class="home-feed" x-data="favoritesList">
+    <section class="hero">
+      <div class="hero-row">
+        <p>Your favorite articles, kept close.</p>
+      </div>
+    </section>
+
+    <template x-if="favoriteArticles.length === 0">
+      <p class="empty">
+        No favorites yet. Open any article and tap "Favorite this article" to
+        add it here.
+      </p>
+    </template>
+
+    <template x-if="favoriteArticles.length > 0">
+      <ol class="article-list">
+        <template x-for="article in favoriteArticles" :key="article.id">
+          <li
+            class="article-card"
+            :class="{
+              'is-read': $store.reads.isRead(article.id),
+              'is-favorited': true,
+            }"
+          >
+            <button
+              type="button"
+              class="article-save-toggle"
+              title="Remove from favorites"
+              aria-label="Remove from favorites"
+              aria-pressed="true"
+              @click.stop="$store.favorites.toggle(article.id)"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 3.75A1.75 1.75 0 0 1 7.75 2h8.5A1.75 1.75 0 0 1 18 3.75v16.09a.75.75 0 0 1-1.2.6L12 16.56l-4.8 3.88a.75.75 0 0 1-1.2-.6V3.75Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linejoin="round"></path>
+              </svg>
+            </button>
+            <label
+              class="article-read-toggle"
+              title="Mark as read"
+              @click.stop
+            >
+              <input
+                type="checkbox"
+                :checked="$store.reads.isRead(article.id)"
+                @click.stop
+                @change="$store.reads.setRead(article.id, $event.target.checked)"
+                aria-label="Mark as read"
+              />
+            </label>
+            <a :href="article.url">
+              <span class="article-title" x-text="article.title"></span>
+              <span class="meta">
+                <span x-text="article.site_name"></span>
+                <span x-text="article.category"></span>
+                <span x-text="article.readingTime"></span>
+                <time
+                  :datetime="article.pubDate"
+                  x-text="formatDate(article.pubDate)"></time>
+              </span>
+            </a>
+          </li>
+        </template>
+      </ol>
+    </template>
+  </div>
+</BaseLayout>
