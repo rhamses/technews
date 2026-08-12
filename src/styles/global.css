@@ -762,6 +762,16 @@ select {
   height: 1em;
 }
 
+.favorite-article-btn.is-favorited {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--line));
+  color: color-mix(in oklab, var(--accent) 75%, var(--ink));
+}
+
+.favorite-article-btn.is-favorited svg {
+  fill: currentColor;
+}
+
 .article-body {
   width: 100%;
   max-width: none;

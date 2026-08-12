@@ -121,6 +121,13 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             <template x-if="!$store.auth.userId">
               <div class="user-menu-section">
                 <p class="user-menu-copy">Save reading history with a passkey.</p>
+                <a
+                  class="user-menu-action"
+                  href="/favorites/"
+                  @click="$store.auth.open = false"
+                >
+                  Favorites
+                </a>
                 <button type="button" class="user-menu-action" @click="$store.auth.login()">
                   Sign in with passkey
                 </button>
@@ -132,6 +139,13 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
             <template x-if="$store.auth.userId">
               <div class="user-menu-section">
                 <p class="user-menu-copy">Signed in · history synced</p>
+                <a
+                  class="user-menu-action"
+                  href="/favorites/"
+                  @click="$store.auth.open = false"
+                >
+                  Favorites
+                </a>
                 <button type="button" class="user-menu-action" @click="$store.auth.logout()">
                   Sign out
                 </button>
@@ -503,6 +517,7 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         startRegistration,
       } from "@simplewebauthn/browser";
       import { loadReadIds, saveReadIds } from "../lib/read-status";
+      import { loadFavoriteIds, saveFavoriteIds } from "../lib/favorites-status";
 
       type LightboxStore = {
         src: string | null;
@@ -536,6 +551,15 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         setRead(id: string, read: boolean): void;
         replaceAll(ids: string[]): void;
         observeEnd(articleId: string, target: Element | null | undefined): void;
+      };
+
+      type FavoritesStore = {
+        ids: Record<string, true>;
+        init(): void;
+        isFavorite(id: string): boolean;
+        setFavorite(id: string, favorite: boolean): void;
+        toggle(id: string): void;
+        replaceAll(ids: string[]): void;
       };
 
       type FeedArticle = {
@@ -660,6 +684,45 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
                 this.visibleCount + this.pageSize,
                 this.filtered.length,
               );
+            },
+
+            formatDate(iso: string) {
+              const date = new Date(iso);
+              if (Number.isNaN(date.getTime())) {
+                return "";
+              }
+              return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+            },
+          };
+        });
+
+        Alpine.data("favoritesList", () => {
+          const feedNode = document.getElementById("technews-feed-data");
+          const articles = feedNode?.textContent
+            ? (JSON.parse(feedNode.textContent) as FeedArticle[])
+            : [];
+
+          return {
+            articles,
+            tick: 0,
+
+            init() {
+              this.$watch(
+                () => (Alpine.store("favorites") as FavoritesStore).ids,
+                () => {
+                  this.tick += 1;
+                },
+              );
+            },
+
+            get favoriteArticles() {
+              void this.tick;
+              const favoriteMap = (Alpine.store("favorites") as FavoritesStore).ids;
+              return this.articles.filter((article) => favoriteMap[article.id]);
             },
 
             formatDate(iso: string) {
@@ -915,6 +978,61 @@ const pageTitle = title === "Technews" ? title : `${title} · Technews`;
         };
 
         Alpine.store("reads", readsStore);
+
+        const favoritesStore: FavoritesStore = {
+          ids: {},
+
+          init() {
+            const map: Record<string, true> = {};
+            for (const id of loadFavoriteIds()) {
+              map[id] = true;
+            }
+            this.ids = map;
+          },
+
+          isFavorite(id) {
+            return Boolean(this.ids[id]);
+          },
+
+          replaceAll(ids) {
+            const map: Record<string, true> = {};
+            for (const id of ids) {
+              if (id) {
+                map[id] = true;
+              }
+            }
+            this.ids = map;
+            saveFavoriteIds(Object.keys(this.ids));
+          },
+
+          setFavorite(id, favorite) {
+            if (!id) {
+              return;
+            }
+
+            if (favorite) {
+              if (this.ids[id]) {
+                return;
+              }
+              this.ids = { ...this.ids, [id]: true };
+            } else {
+              if (!this.ids[id]) {
+                return;
+              }
+              const next = { ...this.ids };
+              delete next[id];
+              this.ids = next;
+            }
+
+            saveFavoriteIds(Object.keys(this.ids));
+          },
+
+          toggle(id) {
+            this.setFavorite(id, !this.isFavorite(id));
+          },
+        };
+
+        Alpine.store("favorites", favoritesStore);
       });
 
       Object.assign(window, { Alpine });

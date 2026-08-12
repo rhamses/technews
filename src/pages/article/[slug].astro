@@ -80,6 +80,20 @@ const languages = [
     </div>
 
     <div class="article-toolbar">
+      <button
+        type="button"
+        class="favorite-article-btn"
+        data-favorite-btn
+        :class={`{ 'is-favorited': $store.favorites.isFavorite(${JSON.stringify(article.id)}) }`}
+        :aria-pressed={`$store.favorites.isFavorite(${JSON.stringify(article.id)}).toString()`}
+        @click={`$store.favorites.toggle(${JSON.stringify(article.id)})`}
+      >
+        <Icon name="lucide:bookmark" />
+        <span
+          x-text={`$store.favorites.isFavorite(${JSON.stringify(article.id)}) ? 'Favorited' : 'Favorite this article'`}
+          >Favorite this article</span
+        >
+      </button>
       <label>
         <Icon name="lucide:languages" />
         <span>Translate</span>
