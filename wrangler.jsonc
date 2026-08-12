@@ -6,8 +6,21 @@
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
 		"directory": "./dist",
-		"binding": "ASSETS"
+		"binding": "ASSETS",
+		"run_worker_first": ["/technews", "/technews/*"]
 	},
+	"workers_dev": true,
+	"preview_urls": true,
+	"routes": [
+		{
+			"pattern": "technews.rhams.es",
+			"custom_domain": true
+		},
+		{
+			"pattern": "rhams.es/technews*",
+			"zone_name": "rhams.es"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
@@ -19,6 +32,10 @@
 		{
 			"binding": "SESSION",
 			"id": "34de0ddc159a4feaa1b94a4727a09e6e"
+		},
+		{
+			"binding": "ARTICLE_CACHE",
+			"id": "306d24081f1d405c8fa35950c7804e74"
 		}
 	],
 	"d1_databases": [

@@ -1,35 +1,36 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
-import { getCollection, render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import ArticleHeader from "../../components/ArticleHeader.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { enhanceArticleHtml } from "../../lib/enhance-article-html";
+import { loadOrReextractArticle } from "../../lib/read-later";
 
-export async function getStaticPaths() {
-  const articles = await getCollection("articles");
-  return articles.map((article) => ({
-    params: { slug: article.id },
-    props: { article },
-  }));
+const { id } = Astro.params;
+if (!id) {
+  return Astro.redirect("/reading-list/");
 }
 
-const { article } = Astro.props;
-const { Content } = await render(article);
-const enhancedHtml = article.data.contentHtml
-  ? await enhanceArticleHtml(article.data.contentHtml)
+const article = await loadOrReextractArticle(id);
+if (!article) {
+  return Astro.redirect("/reading-list/");
+}
+
+const enhancedHtml = article.contentHtml
+  ? await enhanceArticleHtml(article.contentHtml)
   : null;
 
+const pubDate = new Date(article.pubDate);
 const description =
-  article.data.summary ||
-  `Article from ${article.data.site_name}, collected by Technews.`;
+  article.summary ||
+  `Article from ${article.site_name}, saved to your reading list.`;
 ---
 
 <BaseLayout
-  title={article.data.title}
+  title={article.title}
   description={description}
-  canonical={article.data.link}
+  canonical={article.sourceUrl}
 >
   <article
     class="article-page"
@@ -40,12 +41,12 @@ const description =
   >
     <ArticleHeader
       articleId={article.id}
-      title={article.data.title}
-      siteName={article.data.site_name}
-      author={article.data.author}
-      pubDate={article.data.pubDate}
-      backHref="/"
-      backLabel="All articles"
+      title={article.title}
+      siteName={article.site_name}
+      author={article.author}
+      pubDate={pubDate}
+      backHref="/reading-list/"
+      backLabel="Reading list"
     />
 
     {
@@ -63,23 +64,13 @@ const description =
           `}
         />
       ) : (
-        <div
-          class="article-body"
-          data-article-body
-          @click={`
-            const trigger = $event.target.closest('.article-lightbox-trigger');
-            if (trigger) {
-              $event.preventDefault();
-              $store.lightbox.open(trigger.getAttribute('data-lightbox-src'));
-            }
-          `}
-        >
-          <Content />
+        <div class="article-body" data-article-body>
+          <p>No content available for this article.</p>
         </div>
       )
     }
 
-    <a class="original-link" href={article.data.link} rel="noopener noreferrer">
+    <a class="original-link" href={article.sourceUrl} rel="noopener noreferrer">
       Read original
       <Icon name="lucide:external-link" />
     </a>
@@ -98,7 +89,6 @@ const description =
     const originalBtn = articleRoot.querySelector<HTMLButtonElement>("[data-original-btn]");
     const statusEl = articleRoot.querySelector("[data-translate-status]");
 
-    // Wrap leftover images (markdown Content path) for lightbox.
     if (bodyEl) {
       for (const img of bodyEl.querySelectorAll("img")) {
         if (img.closest("button.article-lightbox-trigger")) {
