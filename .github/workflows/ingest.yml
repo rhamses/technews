@@ -68,6 +68,10 @@ jobs:
             exit 0
           fi
           COUNT="${ADDED:-0}"
+          if [ "$COUNT" -le 0 ] 2>/dev/null; then
+            echo "No new articles (added=${COUNT}); skipping push notification."
+            exit 0
+          fi
           for attempt in 1 2 3 4 5 6; do
             if curl --fail-with-body -sS -X POST \
               -H "Authorization: Bearer ${PUSH_NOTIFY_SECRET}" \
