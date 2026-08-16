@@ -33,6 +33,16 @@ export const POST: APIRoute = async ({ request }) => {
 
   const added = Number(body.added);
   const count = Number.isFinite(added) && added >= 0 ? Math.floor(added) : 0;
+
+  if (count <= 0) {
+    return json({
+      ok: true,
+      skipped: true,
+      added: count,
+      reason: "No new articles since the previous build.",
+    });
+  }
+
   const payload = buildNewArticlesPayload(count);
 
   try {
